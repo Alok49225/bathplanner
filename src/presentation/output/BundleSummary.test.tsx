@@ -105,4 +105,32 @@ describe("BundleSummary", () => {
     render(<BundleSummary bundle={bundle} catalog={CATALOG} />);
     expect(screen.getByText("missing-id")).toBeInTheDocument();
   });
+
+  describe("water efficiency", () => {
+    it("shows the sustainability score as a rounded percentage", () => {
+      render(<BundleSummary bundle={makeBundle({ sustainabilityScore: 0.824 })} catalog={CATALOG} />);
+      expect(screen.getByText("Water efficiency:")).toBeInTheDocument();
+      expect(screen.getByText("82%")).toBeInTheDocument();
+    });
+
+    it("rounds up as well as down", () => {
+      render(<BundleSummary bundle={makeBundle({ sustainabilityScore: 0.826 })} catalog={CATALOG} />);
+      expect(screen.getByText("83%")).toBeInTheDocument();
+    });
+
+    it("handles the 0 and 1 extremes", () => {
+      const { rerender } = render(<BundleSummary bundle={makeBundle({ sustainabilityScore: 0 })} catalog={CATALOG} />);
+      expect(screen.getByText("0%")).toBeInTheDocument();
+
+      rerender(<BundleSummary bundle={makeBundle({ sustainabilityScore: 1 })} catalog={CATALOG} />);
+      expect(screen.getByText("100%")).toBeInTheDocument();
+    });
+
+    it("renders nothing at all when sustainabilityScore is absent, instead of showing a bogus 0%", () => {
+      const bundle = makeBundle();
+      delete bundle.sustainabilityScore;
+      const { container } = render(<BundleSummary bundle={bundle} catalog={CATALOG} />);
+      expect(container.querySelector(".bundle-summary-sustainability")).toBeNull();
+    });
+  });
 });

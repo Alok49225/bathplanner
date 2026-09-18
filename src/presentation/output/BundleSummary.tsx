@@ -70,6 +70,12 @@ export function BundleSummary({ bundle, catalog }: BundleSummaryProps) {
         </span>
       </div>
 
+      {typeof bundle.sustainabilityScore === "number" && (
+        <div className="bundle-summary-sustainability">
+          Water efficiency: <strong>{Math.round(bundle.sustainabilityScore * 100)}%</strong>
+        </div>
+      )}
+
       {bundle.warnings.length > 0 && (
         <ul className="bundle-summary-warnings">
           {bundle.warnings.map((warning, i) => (
