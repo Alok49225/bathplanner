@@ -62,7 +62,7 @@ export function DimensionForm({ value, onChange }: DimensionFormProps) {
 
       <DoorList value={value.doors} onChange={(doors) => updateField("doors", doors)} />
       <WindowList value={value.windows} onChange={(windows) => updateField("windows", windows)} />
-      <PlumbingPointList value={value.plumbing} onChange={(plumbing) => updateField("plumbing", plumbing)} />
+      <PlumbingPointList value={value.plumbing} onChange={(plumbing) => updateField("plumbing", plumbing)} room={value} />
     </div>
   );
 }

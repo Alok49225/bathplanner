@@ -1,0 +1,36 @@
+.plumbing-placer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.plumbing-placer-categories {
+  display: flex;
+  gap: 6px;
+}
+
+.plumbing-placer-category {
+  font-size: 12.5px;
+  padding: 5px 12px;
+  border: 1px solid #d3dbd6;
+  border-radius: 20px;
+  background: #ffffff;
+  color: #526059;
+  cursor: pointer;
+}
+
+.plumbing-placer-category-selected {
+  /* #0f5c66 — the project's one accent color, same as TierSwitcher's selected-tab treatment. */
+  border-color: #0f5c66;
+  background: #eaf3f3;
+  color: #0f5c66;
+  font-weight: 600;
+}
+
+.plumbing-placer-hint {
+  margin: 0;
+  font-size: 12px;
+  color: #526059;
+  font-style: italic;
+}

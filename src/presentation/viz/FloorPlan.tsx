@@ -1,4 +1,5 @@
-import type { RoomDimensions, Wall, PlumbingPoint } from "../../domain/types/room";
+import type { MouseEvent as ReactMouseEvent } from "react";
+import type { RoomDimensions, Wall, PlumbingPoint, Point } from "../../domain/types/room";
 import "./FloorPlan.css";
 
 export interface FloorPlanProps {
@@ -10,6 +11,15 @@ export interface FloorPlanProps {
    * Defaults true so FloorPlan alone (no bundle yet) still explains its dots.
    */
   showLegend?: boolean;
+  /**
+   * The category a click should place, or null/undefined when placement
+   * mode is off. FloorPlan stays presentational either way — it never reads
+   * or writes Room state itself; it only reports "the user clicked here,"
+   * echoing the category back so the caller doesn't need to worry about it
+   * changing between the click and the callback firing.
+   */
+  selectedCategory?: PlumbingPoint["category"] | null;
+  onPlumbingPointPlace?: (category: PlumbingPoint["category"], position: Point) => void;
 }
 
 interface Vec {
@@ -85,20 +95,42 @@ const PLUMBING_CATEGORY_LABELS: Record<PlumbingPoint["category"], string> = {
   shower: "Shower",
 };
 
-export function FloorPlan({ room, showLegend = true }: FloorPlanProps) {
+export function FloorPlan({ room, showLegend = true, selectedCategory, onPlumbingPointPlace }: FloorPlanProps) {
   const openingsByWall: Record<Wall, Opening[]> = { north: [], south: [], east: [], west: [] };
   room.doors.forEach((d) => openingsByWall[d.wall].push({ start: d.offset, end: d.offset + d.widthIn }));
   room.windows.forEach((w) => openingsByWall[w.wall].push({ start: w.offset, end: w.offset + w.widthIn }));
 
   const plumbingCategoriesPresent = [...new Set(room.plumbing.map((p) => p.category))];
 
+  function handleClick(e: ReactMouseEvent<SVGSVGElement>) {
+    if (!selectedCategory || !onPlumbingPointPlace) return;
+
+    // Convert the click from screen pixels into the SVG's own user-space
+    // coordinates (which the viewBox makes exactly 1 unit = 1 inch) via the
+    // SVG's actual screen transform, not a manual bounding-box ratio — this
+    // stays correct regardless of how the SVG is scaled/displayed.
+    const svg = e.currentTarget;
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return;
+    const screenPoint = svg.createSVGPoint();
+    screenPoint.x = e.clientX;
+    screenPoint.y = e.clientY;
+    const roomPoint = screenPoint.matrixTransform(ctm.inverse());
+
+    onPlumbingPointPlace(selectedCategory, {
+      x: Math.max(0, Math.min(room.widthIn, roomPoint.x)),
+      y: Math.max(0, Math.min(room.lengthIn, roomPoint.y)),
+    });
+  }
+
   return (
     <div className="floor-plan-container">
     <svg
-      className="floor-plan"
+      className={`floor-plan${selectedCategory ? " floor-plan-placing" : ""}`}
       viewBox={`0 0 ${room.widthIn} ${room.lengthIn}`}
       role="img"
       aria-label={`Floor plan, ${room.widthIn} by ${room.lengthIn} inches`}
+      onClick={handleClick}
     >
       {WALLS.map((wall) => {
         const base = wallBase(wall, room);

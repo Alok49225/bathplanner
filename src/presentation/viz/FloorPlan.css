@@ -18,6 +18,12 @@
   border-radius: 8px;
 }
 
+.floor-plan-placing {
+  cursor: crosshair;
+  /* #0f5c66 — the same accent color used for selection states elsewhere (TierSwitcher's active tab). */
+  border-color: #0f5c66;
+}
+
 .floor-plan-wall {
   stroke: #181f1d;
   stroke-width: 2;

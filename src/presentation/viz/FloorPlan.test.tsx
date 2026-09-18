@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { FloorPlan } from "./FloorPlan";
 import type { RoomDimensions } from "../../domain/types/room";
 
@@ -13,6 +13,30 @@ function emptyRoom(overrides: Partial<RoomDimensions> = {}): RoomDimensions {
     plumbing: [],
     ...overrides,
   };
+}
+
+/**
+ * jsdom doesn't implement real SVG geometry (getScreenCTM/createSVGPoint),
+ * so a test that wants to drive FloorPlan's click handler has to stand in
+ * for the browser's own coordinate transform. This fakes a uniform
+ * `pxPerInch` screen-to-room scale — real browser accuracy at arbitrary
+ * sizes/positions is confirmed separately via the live browser harness,
+ * not by this jsdom stand-in.
+ */
+function stubSvgTransform(svg: SVGSVGElement, pxPerInch: number) {
+  (svg as unknown as { createSVGPoint: () => unknown }).createSVGPoint = () => {
+    const point = {
+      x: 0,
+      y: 0,
+      matrixTransform(m: { a: number; d: number }) {
+        return { x: point.x * m.a, y: point.y * m.d };
+      },
+    };
+    return point;
+  };
+  (svg as unknown as { getScreenCTM: () => unknown }).getScreenCTM = () => ({
+    inverse: () => ({ a: 1 / pxPerInch, d: 1 / pxPerInch }),
+  });
 }
 
 describe("FloorPlan", () => {
@@ -185,5 +209,69 @@ describe("FloorPlan", () => {
     const line = screen.getByTestId("floor-plan-scale").querySelector("line")!;
     expect(Number(line.getAttribute("x2"))).toBeLessThan(room.widthIn);
     expect(Number(line.getAttribute("y1"))).toBeLessThan(room.lengthIn);
+  });
+
+  describe("click-to-place", () => {
+    it("converts a click into room-space coordinates via the SVG's own transform, not a hardcoded factor", () => {
+      const onPlace = vi.fn();
+      const { container } = render(
+        <FloorPlan room={emptyRoom()} selectedCategory="vanity" onPlumbingPointPlace={onPlace} />
+      );
+      const svg = container.querySelector("svg")!;
+      stubSvgTransform(svg, 10); // 10 screen px per inch
+      fireEvent.click(svg, { clientX: 300, clientY: 150 });
+      expect(onPlace).toHaveBeenCalledWith("vanity", { x: 30, y: 15 });
+    });
+
+    it("produces different room coordinates for the same screen click at a different pixel-to-inch scale", () => {
+      const onPlace = vi.fn();
+      const { container } = render(
+        <FloorPlan room={emptyRoom()} selectedCategory="toilet" onPlumbingPointPlace={onPlace} />
+      );
+      const svg = container.querySelector("svg")!;
+      stubSvgTransform(svg, 5); // half the density of the test above
+      fireEvent.click(svg, { clientX: 300, clientY: 150 });
+      expect(onPlace).toHaveBeenCalledWith("toilet", { x: 60, y: 30 });
+    });
+
+    it("passes the selected category through to the callback", () => {
+      const onPlace = vi.fn();
+      const { container } = render(
+        <FloorPlan room={emptyRoom()} selectedCategory="shower" onPlumbingPointPlace={onPlace} />
+      );
+      const svg = container.querySelector("svg")!;
+      stubSvgTransform(svg, 10);
+      fireEvent.click(svg, { clientX: 10, clientY: 10 });
+      expect(onPlace.mock.calls[0][0]).toBe("shower");
+    });
+
+    it("clamps the placed coordinates to the room bounds instead of saving a point outside the room", () => {
+      const onPlace = vi.fn();
+      const room = emptyRoom({ widthIn: 60, lengthIn: 96 });
+      const { container } = render(<FloorPlan room={room} selectedCategory="toilet" onPlumbingPointPlace={onPlace} />);
+      const svg = container.querySelector("svg")!;
+      stubSvgTransform(svg, 10);
+      // a click far past the room's edge, e.g. from an SVG that overflows its container
+      fireEvent.click(svg, { clientX: 10000, clientY: -500 });
+      expect(onPlace).toHaveBeenCalledWith("toilet", { x: 60, y: 0 });
+    });
+
+    it("does nothing when no category is selected", () => {
+      const onPlace = vi.fn();
+      const { container } = render(<FloorPlan room={emptyRoom()} onPlumbingPointPlace={onPlace} />);
+      const svg = container.querySelector("svg")!;
+      stubSvgTransform(svg, 10);
+      fireEvent.click(svg, { clientX: 100, clientY: 100 });
+      expect(onPlace).not.toHaveBeenCalled();
+    });
+
+    it("does nothing for a click outside the SVG", () => {
+      const onPlace = vi.fn();
+      const { container } = render(
+        <FloorPlan room={emptyRoom()} selectedCategory="vanity" onPlumbingPointPlace={onPlace} />
+      );
+      fireEvent.click(container); // the wrapping div, not the svg
+      expect(onPlace).not.toHaveBeenCalled();
+    });
   });
 });
