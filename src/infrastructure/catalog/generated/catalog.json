@@ -1,0 +1,1143 @@
+[
+  {
+    "id": "kt-santorini",
+    "category": "toilet",
+    "name": "Santorini Comfort Height",
+    "brand": "Kohler",
+    "priceCents": 42900,
+    "finish": "white",
+    "dimensions": {
+      "width": 15.5,
+      "depth": 27.75,
+      "height": 30.5
+    },
+    "clearanceOverride": {
+      "front": 21,
+      "side": 15
+    },
+    "waterUsage": {
+      "gpf": 1.28
+    },
+    "installComplexity": "standard",
+    "styleTags": [
+      "comfort-height",
+      "elongated"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.8,
+      "classic-luxury": 0.3,
+      "japanese-zen": 0.5
+    },
+    "finishFamily": "kohler-white-standard"
+  },
+  {
+    "id": "kt-veil",
+    "category": "toilet",
+    "name": "Veil Wall-Hung Toilet",
+    "brand": "Kohler",
+    "priceCents": 189900,
+    "finish": "white",
+    "dimensions": {
+      "width": 14.5,
+      "depth": 21.5,
+      "height": 14
+    },
+    "clearanceOverride": {
+      "front": 21,
+      "side": 15
+    },
+    "waterUsage": {
+      "gpf": 1
+    },
+    "installComplexity": "specialist",
+    "styleTags": [
+      "wall-hung",
+      "concealed-tank",
+      "low-profile"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.95,
+      "classic-luxury": 0.2,
+      "japanese-zen": 0.7
+    },
+    "finishFamily": "kohler-white-standard"
+  },
+  {
+    "id": "kt-memoirs",
+    "category": "toilet",
+    "name": "Memoirs Classic",
+    "brand": "Kohler",
+    "priceCents": 61200,
+    "finish": "white",
+    "dimensions": {
+      "width": 16.5,
+      "depth": 30,
+      "height": 31
+    },
+    "clearanceOverride": {
+      "front": 21,
+      "side": 15
+    },
+    "waterUsage": {
+      "gpf": 1.28
+    },
+    "installComplexity": "standard",
+    "styleTags": [
+      "elongated",
+      "traditional",
+      "carved-details"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.2,
+      "classic-luxury": 0.9,
+      "japanese-zen": 0.3
+    },
+    "finishFamily": "kohler-white-standard"
+  },
+  {
+    "id": "kt-cimarron",
+    "category": "toilet",
+    "name": "Cimarron Comfort Height",
+    "brand": "Kohler",
+    "priceCents": 34900,
+    "finish": "white",
+    "dimensions": {
+      "width": 16.375,
+      "depth": 28.75,
+      "height": 30.25
+    },
+    "clearanceOverride": {
+      "front": 21,
+      "side": 15
+    },
+    "waterUsage": {
+      "gpf": 1.28
+    },
+    "installComplexity": "standard",
+    "styleTags": [
+      "elongated",
+      "comfort-height"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.5,
+      "classic-luxury": 0.6,
+      "japanese-zen": 0.4
+    },
+    "finishFamily": "kohler-white-standard"
+  },
+  {
+    "id": "kt-sansouci",
+    "category": "toilet",
+    "name": "San Souci One-Piece",
+    "brand": "Kohler",
+    "priceCents": 45500,
+    "finish": "white",
+    "dimensions": {
+      "width": 16.5,
+      "depth": 29,
+      "height": 27
+    },
+    "clearanceOverride": {
+      "front": 21,
+      "side": 15
+    },
+    "waterUsage": {
+      "gpf": 1.28
+    },
+    "installComplexity": "standard",
+    "styleTags": [
+      "one-piece",
+      "low-profile-tank"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.6,
+      "classic-luxury": 0.4,
+      "japanese-zen": 0.5
+    },
+    "finishFamily": "kohler-white-standard"
+  },
+  {
+    "id": "kt-purist-hatbox",
+    "category": "toilet",
+    "name": "Purist Hatbox",
+    "brand": "Kohler",
+    "priceCents": 79500,
+    "finish": "white",
+    "dimensions": {
+      "width": 15.25,
+      "depth": 27,
+      "height": 22.75
+    },
+    "clearanceOverride": {
+      "front": 21,
+      "side": 15
+    },
+    "waterUsage": {
+      "gpf": 1.28
+    },
+    "installComplexity": "standard",
+    "styleTags": [
+      "round-tank",
+      "hatbox",
+      "sculptural"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.7,
+      "classic-luxury": 0.5,
+      "japanese-zen": 0.8
+    },
+    "finishFamily": "kohler-white-standard"
+  },
+  {
+    "id": "kt-highline",
+    "category": "toilet",
+    "name": "Highline Classic",
+    "brand": "Kohler",
+    "priceCents": 29900,
+    "finish": "white",
+    "dimensions": {
+      "width": 15.25,
+      "depth": 28.5,
+      "height": 29.75
+    },
+    "clearanceOverride": {
+      "front": 21,
+      "side": 15
+    },
+    "waterUsage": {
+      "gpf": 1.28
+    },
+    "installComplexity": "drop-in",
+    "styleTags": [
+      "elongated",
+      "budget"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.4,
+      "classic-luxury": 0.5,
+      "japanese-zen": 0.3
+    },
+    "finishFamily": "kohler-white-standard"
+  },
+  {
+    "id": "kt-persuade",
+    "category": "toilet",
+    "name": "Persuade Curv",
+    "brand": "Kohler",
+    "priceCents": 52000,
+    "finish": "white",
+    "dimensions": {
+      "width": 16.5,
+      "depth": 29.75,
+      "height": 29.5
+    },
+    "clearanceOverride": {
+      "front": 21,
+      "side": 15
+    },
+    "waterUsage": {
+      "gpf": 1.28
+    },
+    "installComplexity": "standard",
+    "styleTags": [
+      "curved-silhouette",
+      "elongated"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.55,
+      "classic-luxury": 0.6,
+      "japanese-zen": 0.4
+    },
+    "finishFamily": "kohler-white-standard"
+  },
+  {
+    "id": "kv-poplin30",
+    "category": "vanity",
+    "name": "Poplin 30in Single Vanity",
+    "brand": "Kohler",
+    "priceCents": 124000,
+    "finish": "matte-black",
+    "dimensions": {
+      "width": 30,
+      "depth": 21.5,
+      "height": 34.5
+    },
+    "installComplexity": "standard",
+    "styleTags": [
+      "floating",
+      "matte-black-cabinet",
+      "single-bowl"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.85,
+      "classic-luxury": 0.3,
+      "japanese-zen": 0.6
+    },
+    "finishFamily": "kohler-matte-black-hardware"
+  },
+  {
+    "id": "kv-damask48",
+    "category": "vanity",
+    "name": "Damask 48in Double Vanity",
+    "brand": "Kohler",
+    "priceCents": 289000,
+    "finish": "brushed-nickel",
+    "dimensions": {
+      "width": 48,
+      "depth": 22,
+      "height": 35
+    },
+    "installComplexity": "standard",
+    "styleTags": [
+      "double-bowl",
+      "shaker-cabinet",
+      "white-oak"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.3,
+      "classic-luxury": 0.9,
+      "japanese-zen": 0.3
+    },
+    "finishFamily": "kohler-nickel-hardware"
+  },
+  {
+    "id": "kv-jute24",
+    "category": "vanity",
+    "name": "Jute 24in Vanity",
+    "brand": "Kohler",
+    "priceCents": 98000,
+    "finish": "brushed-gold",
+    "dimensions": {
+      "width": 24,
+      "depth": 19,
+      "height": 34
+    },
+    "installComplexity": "standard",
+    "styleTags": [
+      "walnut-veneer",
+      "floating",
+      "compact"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.7,
+      "classic-luxury": 0.4,
+      "japanese-zen": 0.75
+    },
+    "finishFamily": "kohler-gold-hardware"
+  },
+  {
+    "id": "kv-verdera36",
+    "category": "vanity",
+    "name": "Verdera 36in Vanity",
+    "brand": "Kohler",
+    "priceCents": 156000,
+    "finish": "chrome",
+    "dimensions": {
+      "width": 36,
+      "depth": 21,
+      "height": 34.5
+    },
+    "installComplexity": "standard",
+    "styleTags": [
+      "white-lacquer",
+      "soft-close",
+      "minimal"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.8,
+      "classic-luxury": 0.35,
+      "japanese-zen": 0.55
+    },
+    "finishFamily": "kohler-chrome-hardware"
+  },
+  {
+    "id": "kv-tresham30",
+    "category": "vanity",
+    "name": "Tresham 30in Vanity",
+    "brand": "Kohler",
+    "priceCents": 89000,
+    "finish": "oil-rubbed-bronze",
+    "dimensions": {
+      "width": 30,
+      "depth": 22,
+      "height": 34
+    },
+    "installComplexity": "standard",
+    "styleTags": [
+      "traditional",
+      "raised-panel",
+      "cherry-finish"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.2,
+      "classic-luxury": 0.85,
+      "japanese-zen": 0.3
+    },
+    "finishFamily": "kohler-bronze-hardware"
+  },
+  {
+    "id": "kv-maxstow-corner",
+    "category": "vanity",
+    "name": "Maxstow Corner Vanity",
+    "brand": "Kohler",
+    "priceCents": 76000,
+    "finish": "brushed-nickel",
+    "dimensions": {
+      "width": 22,
+      "depth": 22,
+      "height": 33
+    },
+    "installComplexity": "standard",
+    "styleTags": [
+      "corner-fit",
+      "compact",
+      "small-bath"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.6,
+      "classic-luxury": 0.4,
+      "japanese-zen": 0.5
+    },
+    "finishFamily": "kohler-nickel-hardware"
+  },
+  {
+    "id": "kv-derwent48",
+    "category": "vanity",
+    "name": "Derwent 48in Double Vanity",
+    "brand": "Kohler",
+    "priceCents": 245000,
+    "finish": "matte-black",
+    "dimensions": {
+      "width": 48,
+      "depth": 21.5,
+      "height": 34.5
+    },
+    "installComplexity": "standard",
+    "styleTags": [
+      "double-bowl",
+      "matte-black-cabinet",
+      "linear-pulls"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.9,
+      "classic-luxury": 0.25,
+      "japanese-zen": 0.6
+    },
+    "finishFamily": "kohler-matte-black-hardware"
+  },
+  {
+    "id": "kv-linear-teak24",
+    "category": "vanity",
+    "name": "Linear Teak 24in Vanity",
+    "brand": "Kohler",
+    "priceCents": 112000,
+    "finish": "stainless-steel",
+    "dimensions": {
+      "width": 24,
+      "depth": 20,
+      "height": 32
+    },
+    "installComplexity": "standard",
+    "styleTags": [
+      "teak",
+      "wall-mounted",
+      "spa-style"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.75,
+      "classic-luxury": 0.3,
+      "japanese-zen": 0.9
+    },
+    "finishFamily": "kohler-steel-hardware"
+  },
+  {
+    "id": "kv-ainsley30-lowered",
+    "category": "vanity",
+    "name": "Ainsley 30in Lowered-ADA Vanity",
+    "brand": "Kohler",
+    "priceCents": 99000,
+    "finish": "brushed-nickel",
+    "dimensions": {
+      "width": 30,
+      "depth": 21,
+      "height": 30
+    },
+    "installComplexity": "standard",
+    "styleTags": [
+      "ada-height",
+      "accessible",
+      "knee-clearance"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.5,
+      "classic-luxury": 0.5,
+      "japanese-zen": 0.5
+    },
+    "finishFamily": "kohler-nickel-hardware"
+  },
+  {
+    "id": "kf-purist-single",
+    "category": "faucet",
+    "name": "Purist Single-Handle Faucet",
+    "brand": "Kohler",
+    "priceCents": 32900,
+    "finish": "chrome",
+    "dimensions": {
+      "width": 2,
+      "depth": 6,
+      "height": 9
+    },
+    "waterUsage": {
+      "gpm": 1.2
+    },
+    "installComplexity": "drop-in",
+    "styleTags": [
+      "single-handle",
+      "minimal",
+      "widespread-optional"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.85,
+      "classic-luxury": 0.3,
+      "japanese-zen": 0.6
+    },
+    "finishFamily": "kohler-chrome-hardware"
+  },
+  {
+    "id": "kf-artifacts-bridge",
+    "category": "faucet",
+    "name": "Artifacts Bridge Faucet",
+    "brand": "Kohler",
+    "priceCents": 68500,
+    "finish": "brushed-gold",
+    "dimensions": {
+      "width": 3,
+      "depth": 8,
+      "height": 10
+    },
+    "waterUsage": {
+      "gpm": 1.5
+    },
+    "installComplexity": "standard",
+    "styleTags": [
+      "bridge",
+      "traditional",
+      "cross-handles"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.2,
+      "classic-luxury": 0.9,
+      "japanese-zen": 0.3
+    },
+    "finishFamily": "kohler-gold-hardware"
+  },
+  {
+    "id": "kf-composed-wall",
+    "category": "faucet",
+    "name": "Composed Wall-Mount Faucet",
+    "brand": "Kohler",
+    "priceCents": 74500,
+    "finish": "matte-black",
+    "dimensions": {
+      "width": 2,
+      "depth": 9,
+      "height": 7
+    },
+    "waterUsage": {
+      "gpm": 1.2
+    },
+    "installComplexity": "specialist",
+    "styleTags": [
+      "wall-mount",
+      "minimal",
+      "low-profile"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.9,
+      "classic-luxury": 0.2,
+      "japanese-zen": 0.75
+    },
+    "finishFamily": "kohler-matte-black-hardware"
+  },
+  {
+    "id": "kf-forte-single",
+    "category": "faucet",
+    "name": "Forte Single-Handle Faucet",
+    "brand": "Kohler",
+    "priceCents": 18900,
+    "finish": "chrome",
+    "dimensions": {
+      "width": 2,
+      "depth": 6.5,
+      "height": 8
+    },
+    "waterUsage": {
+      "gpm": 1.5
+    },
+    "installComplexity": "drop-in",
+    "styleTags": [
+      "single-handle",
+      "value"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.5,
+      "classic-luxury": 0.5,
+      "japanese-zen": 0.4
+    },
+    "finishFamily": "kohler-chrome-hardware"
+  },
+  {
+    "id": "kf-margaux-single",
+    "category": "faucet",
+    "name": "Margaux Single-Handle Faucet",
+    "brand": "Kohler",
+    "priceCents": 45500,
+    "finish": "oil-rubbed-bronze",
+    "dimensions": {
+      "width": 2.5,
+      "depth": 7,
+      "height": 11
+    },
+    "waterUsage": {
+      "gpm": 1.5
+    },
+    "installComplexity": "standard",
+    "styleTags": [
+      "traditional",
+      "high-arc"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.25,
+      "classic-luxury": 0.85,
+      "japanese-zen": 0.35
+    },
+    "finishFamily": "kohler-bronze-hardware"
+  },
+  {
+    "id": "kf-avid-single",
+    "category": "faucet",
+    "name": "Avid Single-Handle Faucet",
+    "brand": "Kohler",
+    "priceCents": 22900,
+    "finish": "brushed-nickel",
+    "dimensions": {
+      "width": 2,
+      "depth": 6,
+      "height": 8.5
+    },
+    "waterUsage": {
+      "gpm": 1.5
+    },
+    "installComplexity": "drop-in",
+    "styleTags": [
+      "single-handle",
+      "transitional"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.55,
+      "classic-luxury": 0.55,
+      "japanese-zen": 0.45
+    },
+    "finishFamily": "kohler-nickel-hardware"
+  },
+  {
+    "id": "kf-tone-vessel",
+    "category": "faucet",
+    "name": "Tone Vessel Faucet",
+    "brand": "Kohler",
+    "priceCents": 39900,
+    "finish": "brushed-gold",
+    "dimensions": {
+      "width": 2,
+      "depth": 6,
+      "height": 12
+    },
+    "waterUsage": {
+      "gpm": 1.2
+    },
+    "installComplexity": "standard",
+    "styleTags": [
+      "vessel-height",
+      "minimal",
+      "sculptural"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.8,
+      "classic-luxury": 0.35,
+      "japanese-zen": 0.8
+    },
+    "finishFamily": "kohler-gold-hardware"
+  },
+  {
+    "id": "kf-castia-single",
+    "category": "faucet",
+    "name": "Castia Single-Handle Faucet",
+    "brand": "Kohler",
+    "priceCents": 27500,
+    "finish": "stainless-steel",
+    "dimensions": {
+      "width": 2,
+      "depth": 6.25,
+      "height": 8
+    },
+    "waterUsage": {
+      "gpm": 1.5
+    },
+    "installComplexity": "drop-in",
+    "styleTags": [
+      "single-handle",
+      "contemporary"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.65,
+      "classic-luxury": 0.4,
+      "japanese-zen": 0.55
+    },
+    "finishFamily": "kohler-steel-hardware"
+  },
+  {
+    "id": "kf-purist-wide",
+    "category": "faucet",
+    "name": "Purist Widespread Faucet",
+    "brand": "Kohler",
+    "priceCents": 58500,
+    "finish": "chrome",
+    "dimensions": {
+      "width": 8,
+      "depth": 6,
+      "height": 6.5
+    },
+    "waterUsage": {
+      "gpm": 1.2
+    },
+    "installComplexity": "standard",
+    "styleTags": [
+      "widespread",
+      "minimal",
+      "architectural"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.9,
+      "classic-luxury": 0.4,
+      "japanese-zen": 0.65
+    },
+    "finishFamily": "kohler-chrome-hardware"
+  },
+  {
+    "id": "ks-anthem-system",
+    "category": "shower",
+    "name": "Anthem Digital Shower System",
+    "brand": "Kohler",
+    "priceCents": 189000,
+    "finish": "matte-black",
+    "dimensions": {
+      "width": 8,
+      "depth": 4,
+      "height": 48
+    },
+    "waterUsage": {
+      "gpm": 2
+    },
+    "installComplexity": "specialist",
+    "styleTags": [
+      "digital-control",
+      "multi-outlet",
+      "curbless-compatible"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.9,
+      "classic-luxury": 0.3,
+      "japanese-zen": 0.6
+    },
+    "finishFamily": "kohler-matte-black-hardware"
+  },
+  {
+    "id": "ks-purist-panel",
+    "category": "shower",
+    "name": "Purist Shower Panel",
+    "brand": "Kohler",
+    "priceCents": 145000,
+    "finish": "chrome",
+    "dimensions": {
+      "width": 10,
+      "depth": 4,
+      "height": 48
+    },
+    "waterUsage": {
+      "gpm": 1.75
+    },
+    "installComplexity": "standard",
+    "styleTags": [
+      "rain-head",
+      "handshower",
+      "minimal"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.85,
+      "classic-luxury": 0.3,
+      "japanese-zen": 0.65
+    },
+    "finishFamily": "kohler-chrome-hardware"
+  },
+  {
+    "id": "ks-artifacts-thermostatic",
+    "category": "shower",
+    "name": "Artifacts Thermostatic Valve Trim",
+    "brand": "Kohler",
+    "priceCents": 98500,
+    "finish": "brushed-gold",
+    "dimensions": {
+      "width": 6,
+      "depth": 4,
+      "height": 8
+    },
+    "waterUsage": {
+      "gpm": 2
+    },
+    "installComplexity": "standard",
+    "styleTags": [
+      "thermostatic",
+      "traditional",
+      "cross-handle"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.2,
+      "classic-luxury": 0.9,
+      "japanese-zen": 0.3
+    },
+    "finishFamily": "kohler-gold-hardware"
+  },
+  {
+    "id": "ks-forte-multifunction",
+    "category": "shower",
+    "name": "Forte Multifunction Shower Kit",
+    "brand": "Kohler",
+    "priceCents": 32900,
+    "finish": "chrome",
+    "dimensions": {
+      "width": 8,
+      "depth": 3,
+      "height": 24
+    },
+    "waterUsage": {
+      "gpm": 2
+    },
+    "installComplexity": "drop-in",
+    "styleTags": [
+      "value",
+      "multifunction-head"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.5,
+      "classic-luxury": 0.5,
+      "japanese-zen": 0.4
+    },
+    "finishFamily": "kohler-chrome-hardware"
+  },
+  {
+    "id": "ks-statement-curbless",
+    "category": "shower",
+    "name": "Statement Curbless Shower Base",
+    "brand": "Kohler",
+    "priceCents": 156000,
+    "finish": "white",
+    "dimensions": {
+      "width": 60,
+      "depth": 32,
+      "height": 4
+    },
+    "installComplexity": "specialist",
+    "styleTags": [
+      "curbless",
+      "ada",
+      "linear-drain"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.7,
+      "classic-luxury": 0.3,
+      "japanese-zen": 0.6
+    },
+    "finishFamily": "kohler-white-standard"
+  },
+  {
+    "id": "ks-composed-rain",
+    "category": "shower",
+    "name": "Composed Rain Head System",
+    "brand": "Kohler",
+    "priceCents": 112000,
+    "finish": "matte-black",
+    "dimensions": {
+      "width": 12,
+      "depth": 12,
+      "height": 2
+    },
+    "waterUsage": {
+      "gpm": 1.75
+    },
+    "installComplexity": "standard",
+    "styleTags": [
+      "rain-head",
+      "ceiling-mount",
+      "minimal"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.9,
+      "classic-luxury": 0.25,
+      "japanese-zen": 0.75
+    },
+    "finishFamily": "kohler-matte-black-hardware"
+  },
+  {
+    "id": "ks-margaux-handshower",
+    "category": "shower",
+    "name": "Margaux Handshower Column",
+    "brand": "Kohler",
+    "priceCents": 87500,
+    "finish": "oil-rubbed-bronze",
+    "dimensions": {
+      "width": 4,
+      "depth": 4,
+      "height": 48
+    },
+    "waterUsage": {
+      "gpm": 2
+    },
+    "installComplexity": "standard",
+    "styleTags": [
+      "traditional",
+      "column",
+      "handshower"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.25,
+      "classic-luxury": 0.85,
+      "japanese-zen": 0.35
+    },
+    "finishFamily": "kohler-bronze-hardware"
+  },
+  {
+    "id": "ks-avid-shower-kit",
+    "category": "shower",
+    "name": "Avid Shower Trim Kit",
+    "brand": "Kohler",
+    "priceCents": 41500,
+    "finish": "brushed-nickel",
+    "dimensions": {
+      "width": 7,
+      "depth": 3,
+      "height": 22
+    },
+    "waterUsage": {
+      "gpm": 2
+    },
+    "installComplexity": "standard",
+    "styleTags": [
+      "transitional",
+      "multifunction-head"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.55,
+      "classic-luxury": 0.55,
+      "japanese-zen": 0.45
+    },
+    "finishFamily": "kohler-nickel-hardware"
+  },
+  {
+    "id": "kl-purist-sconce",
+    "category": "lighting",
+    "name": "Purist Vanity Sconce",
+    "brand": "Kohler",
+    "priceCents": 24500,
+    "finish": "chrome",
+    "dimensions": {
+      "width": 5,
+      "depth": 5,
+      "height": 14
+    },
+    "installComplexity": "drop-in",
+    "styleTags": [
+      "sconce",
+      "minimal",
+      "linear-glass"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.85,
+      "classic-luxury": 0.35,
+      "japanese-zen": 0.6
+    },
+    "finishFamily": "kohler-chrome-hardware"
+  },
+  {
+    "id": "kl-artifacts-pendant",
+    "category": "lighting",
+    "name": "Artifacts Pendant",
+    "brand": "Kohler",
+    "priceCents": 38500,
+    "finish": "brushed-gold",
+    "dimensions": {
+      "width": 8,
+      "depth": 8,
+      "height": 12
+    },
+    "installComplexity": "standard",
+    "styleTags": [
+      "pendant",
+      "traditional",
+      "glass-shade"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.25,
+      "classic-luxury": 0.9,
+      "japanese-zen": 0.35
+    },
+    "finishFamily": "kohler-gold-hardware"
+  },
+  {
+    "id": "kl-composed-bar",
+    "category": "lighting",
+    "name": "Composed LED Vanity Bar",
+    "brand": "Kohler",
+    "priceCents": 32900,
+    "finish": "matte-black",
+    "dimensions": {
+      "width": 24,
+      "depth": 4,
+      "height": 4
+    },
+    "installComplexity": "standard",
+    "styleTags": [
+      "led",
+      "bar-light",
+      "minimal"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.9,
+      "classic-luxury": 0.25,
+      "japanese-zen": 0.65
+    },
+    "finishFamily": "kohler-matte-black-hardware"
+  },
+  {
+    "id": "kl-forte-flushmount",
+    "category": "lighting",
+    "name": "Forte Flush Mount",
+    "brand": "Kohler",
+    "priceCents": 12900,
+    "finish": "white",
+    "dimensions": {
+      "width": 11,
+      "depth": 11,
+      "height": 5
+    },
+    "installComplexity": "drop-in",
+    "styleTags": [
+      "value",
+      "flush-mount"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.5,
+      "classic-luxury": 0.5,
+      "japanese-zen": 0.4
+    },
+    "finishFamily": "kohler-white-standard"
+  },
+  {
+    "id": "kl-tone-backlit-mirror",
+    "category": "lighting",
+    "name": "Tone Backlit LED Mirror",
+    "brand": "Kohler",
+    "priceCents": 68500,
+    "finish": "stainless-steel",
+    "dimensions": {
+      "width": 30,
+      "depth": 1.5,
+      "height": 36
+    },
+    "installComplexity": "standard",
+    "styleTags": [
+      "backlit",
+      "anti-fog",
+      "mirror-light"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.8,
+      "classic-luxury": 0.3,
+      "japanese-zen": 0.7
+    },
+    "finishFamily": "kohler-steel-hardware"
+  },
+  {
+    "id": "kl-margaux-sconce",
+    "category": "lighting",
+    "name": "Margaux Wall Sconce",
+    "brand": "Kohler",
+    "priceCents": 29500,
+    "finish": "oil-rubbed-bronze",
+    "dimensions": {
+      "width": 5,
+      "depth": 6,
+      "height": 16
+    },
+    "installComplexity": "standard",
+    "styleTags": [
+      "traditional",
+      "candlestick-style"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.2,
+      "classic-luxury": 0.85,
+      "japanese-zen": 0.3
+    },
+    "finishFamily": "kohler-bronze-hardware"
+  },
+  {
+    "id": "kl-verdera-cabinet-light",
+    "category": "lighting",
+    "name": "Verdera Lighted Medicine Cabinet",
+    "brand": "Kohler",
+    "priceCents": 89500,
+    "finish": "brushed-nickel",
+    "dimensions": {
+      "width": 30,
+      "depth": 5,
+      "height": 33
+    },
+    "installComplexity": "standard",
+    "styleTags": [
+      "storage",
+      "backlit",
+      "defogger"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.75,
+      "classic-luxury": 0.4,
+      "japanese-zen": 0.55
+    },
+    "finishFamily": "kohler-nickel-hardware"
+  },
+  {
+    "id": "kl-zen-pendant-linear",
+    "category": "lighting",
+    "name": "Zen Linear Pendant",
+    "brand": "Kohler",
+    "priceCents": 45500,
+    "finish": "brushed-gold",
+    "dimensions": {
+      "width": 36,
+      "depth": 4,
+      "height": 5
+    },
+    "installComplexity": "standard",
+    "styleTags": [
+      "linear",
+      "paper-lantern-inspired",
+      "soft-glow"
+    ],
+    "themeScores": {
+      "minimalist-modern": 0.5,
+      "classic-luxury": 0.3,
+      "japanese-zen": 0.95
+    },
+    "finishFamily": "kohler-gold-hardware"
+  }
+]

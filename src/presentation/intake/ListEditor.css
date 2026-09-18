@@ -1,0 +1,72 @@
+.list-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-family: system-ui, sans-serif;
+}
+
+.list-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.list-editor-header h4 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #181f1d;
+}
+
+.list-editor-header button {
+  font-size: 12px;
+  border: 1px solid #0f5c66;
+  color: #0f5c66;
+  background: none;
+  border-radius: 5px;
+  padding: 4px 9px;
+  cursor: pointer;
+}
+
+.list-editor-empty {
+  font-size: 12.5px;
+  color: #526059;
+  font-style: italic;
+  margin: 0;
+}
+
+.list-editor-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  border: 1px solid #d3dbd6;
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+.list-editor-row label {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 11px;
+  color: #526059;
+}
+
+.list-editor-row select,
+.list-editor-row input {
+  font-size: 13px;
+  padding: 4px 6px;
+  border: 1px solid #d3dbd6;
+  border-radius: 4px;
+  width: 90px;
+}
+
+.list-editor-row button {
+  font-size: 12px;
+  border: none;
+  background: none;
+  color: #a23b2e;
+  cursor: pointer;
+  padding: 4px 6px;
+}

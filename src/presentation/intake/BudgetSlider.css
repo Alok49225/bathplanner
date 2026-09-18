@@ -1,0 +1,30 @@
+.budget-slider {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-family: system-ui, sans-serif;
+}
+
+.budget-slider-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.budget-slider-header label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #526059;
+}
+
+.budget-slider-value {
+  font-size: 20px;
+  font-weight: 600;
+  color: #181f1d;
+  font-variant-numeric: tabular-nums;
+}
+
+.budget-slider input[type="range"] {
+  width: 100%;
+  accent-color: #0f5c66;
+}

@@ -1,0 +1,97 @@
+.bundle-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-family: system-ui, sans-serif;
+  border: 1px solid #d3dbd6;
+  border-radius: 8px;
+  padding: 16px 18px;
+  background: #ffffff;
+}
+
+.bundle-summary-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bundle-summary-item {
+  padding-bottom: 12px;
+  border-bottom: 1px solid #d3dbd6;
+}
+
+.bundle-summary-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.bundle-summary-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.bundle-summary-item-label {
+  display: flex;
+  flex-direction: column;
+}
+
+.bundle-summary-item-category {
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #526059;
+}
+
+.bundle-summary-item-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #181f1d;
+}
+
+.bundle-summary-item-price {
+  font-size: 14px;
+  color: #181f1d;
+  white-space: nowrap;
+}
+
+.bundle-summary-item-rationale {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  color: #526059;
+}
+
+.bundle-summary-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 2px solid #d3dbd6;
+  font-size: 14px;
+  color: #181f1d;
+}
+
+.bundle-summary-remaining {
+  font-size: 12.5px;
+  color: #526059;
+  white-space: nowrap;
+}
+
+.bundle-summary-warnings {
+  margin: 0;
+  padding: 10px 14px;
+  list-style: disc;
+  list-style-position: inside;
+  /* #96702a — the same tight-fit warning color FixtureLayer/SolveStatusPanel already use. */
+  color: #6b5220;
+  background: #f3e9d3;
+  border: 1px solid #96702a;
+  border-radius: 6px;
+  font-size: 12.5px;
+}

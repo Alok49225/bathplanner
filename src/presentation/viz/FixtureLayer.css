@@ -1,0 +1,121 @@
+/*
+ * Intended to be CSS-stacked directly on top of a FloorPlan (t20) sharing
+ * the same viewBox convention, so its parent should give it
+ * position:absolute/inset:0 over a position:relative wrapper.
+ */
+.fixture-layer-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none; /* re-enabled per-shape below, so the layer overall still lets clicks reach FloorPlan */
+}
+
+.fixture-layer {
+  width: 100%;
+  height: auto;
+  max-height: 480px;
+}
+
+/* Same three hex values as FloorPlan.css's --plumbing-* — kept in sync by hand since these two files don't share a CSS scope. */
+.fixture-toilet {
+  fill: rgba(162, 59, 46, 0.25);
+  stroke: #a23b2e;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.fixture-vanity {
+  fill: rgba(61, 92, 138, 0.25);
+  stroke: #3d5c8a;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.fixture-shower {
+  fill: rgba(61, 122, 92, 0.25);
+  stroke: #3d7a5c;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.fixture {
+  pointer-events: auto;
+  cursor: default;
+}
+
+.fixture-clearance-overlay {
+  /* #96702a matches --pri-should/--warn from the original blueprint's own
+     design tokens — kept consistent with that, not chosen independently.
+     Faucet's color below must never collide with this one. */
+  fill: none;
+  stroke: #96702a;
+  stroke-width: 1;
+  stroke-dasharray: 2 2;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+.fixture-marker {
+  stroke: #ffffff;
+  stroke-width: 0.5;
+  vector-effect: non-scaling-stroke;
+  pointer-events: auto;
+  cursor: default;
+}
+
+.fixture-marker-faucet {
+  /* #9c4a63 — reused from the build board's own --ws-chat token, not
+     invented fresh; must stay distinct from .fixture-clearance-overlay's
+     warning color above. */
+  fill: #9c4a63;
+}
+
+.fixture-marker-lighting {
+  fill: #7a4a8a;
+}
+
+.fixture-tooltip {
+  position: fixed;
+  transform: translate(-50%, calc(-100% - 8px));
+  background: #ffffff;
+  color: #181f1d;
+  border: 1px solid #d3dbd6;
+  border-radius: 6px;
+  padding: 5px 9px;
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(24, 31, 29, 0.15);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.fixture-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-family: system-ui, sans-serif;
+  font-size: 12px;
+  color: #526059;
+  pointer-events: none;
+}
+
+.fixture-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fixture-legend-swatch {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  border-radius: 2px;
+}
+
+.fixture-legend-swatch-diamond {
+  border-radius: 0;
+  transform: rotate(45deg);
+  width: 8px;
+  height: 8px;
+}
