@@ -100,7 +100,7 @@ export function useChatSolve({
   }, []);
 
   const applyPin = useCallback(
-    async (category: ProductCategory, productId: string) => {
+    async (kind: "pin" | "swap", category: ProductCategory, productId: string) => {
       if (session.theme.kind !== "preset") {
         reply("Pick a preset style first, then I can adjust your bundle.");
         return;
@@ -119,9 +119,15 @@ export function useChatSolve({
       if (result.feasible) {
         setPinnedBundle(result.bundle);
         const product = catalog.find((p) => p.id === productId);
-        reply(
-          `Locked in ${product ? product.name : "that product"} for the ${category} — it'll stay in your ${selectedTier} bundle.`
-        );
+        const productName = product ? product.name : "that product";
+        if (kind === "swap") {
+          // buildBundle (t10) already ran generateRationale (t11) for every
+          // item, including this one — reusing it here, not re-deriving it.
+          const rationale = result.bundle.items[category].rationale;
+          reply(`Swapped the ${category} for ${productName}${rationale ? ` — ${rationale}` : ""}.`);
+        } else {
+          reply(`Locked in ${productName} for the ${category} — it'll stay in your ${selectedTier} bundle.`);
+        }
       } else {
         reply(reasonToMessage(result));
       }
@@ -151,7 +157,7 @@ export function useChatSolve({
             return;
           }
           const bundle = solve.tiers.find((b) => b.tier === selectedTier)!;
-          void applyPin(intent.category, bundle.items[intent.category].productId);
+          void applyPin("pin", intent.category, bundle.items[intent.category].productId);
           return;
         }
 
@@ -181,7 +187,7 @@ export function useChatSolve({
               reply(`That's already the ${extreme} ${intent.category} option available.`);
               return;
             }
-            await applyPin(intent.category, neighbor.id);
+            await applyPin("swap", intent.category, neighbor.id);
           })();
           return;
         }

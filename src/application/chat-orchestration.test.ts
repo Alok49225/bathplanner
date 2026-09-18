@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { useChatSolve } from "./chat-orchestration";
+import { generateRationale } from "../domain/engine/rationale-generator";
 import type { CatalogRepository } from "../domain/catalog-repository";
 import type { Product, ProductCategory } from "../domain/types/product";
 import type { SessionState } from "./session-state";
@@ -158,6 +159,15 @@ describe("useChatSolve", () => {
       expect(result.current.messages.at(-1)?.text).toContain("toilet-mid");
     });
 
+    it("keeps the pin reply format unchanged — no rationale appended (t28 only enriches swap)", async () => {
+      const { result } = renderChatSolve({ selectedTier: "balanced" });
+      act(() => result.current.sendMessage("keep the toilet"));
+      await flushMicrotasks();
+      expect(result.current.messages.at(-1)?.text).toBe(
+        "Locked in toilet-mid for the toilet — it'll stay in your balanced bundle."
+      );
+    });
+
     it("replies without pinning anything when there's no solved bundle yet", async () => {
       const { result } = renderChatSolve({ solve: { status: "solving" } });
       act(() => result.current.sendMessage("keep the toilet"));
@@ -188,6 +198,24 @@ describe("useChatSolve", () => {
       act(() => result.current.sendMessage("make the toilet nicer"));
       await flushMicrotasks();
       expect(result.current.pinnedBundle?.items.toilet.productId).toBe("toilet-premium");
+    });
+
+    it("includes the real rationale for why the new pick was chosen, not just its name", async () => {
+      const { result } = renderChatSolve();
+      act(() => result.current.sendMessage("swap the toilet for something cheaper"));
+      await flushMicrotasks();
+
+      // Computed from the same real generateRationale (t11) the engine itself
+      // uses, not hardcoded guessed text — locks in that the actual reasoning
+      // is shown, not just re-deriving what it should say.
+      const toiletOptions = CATALOG.filter((p) => p.category === "toilet");
+      const expectedRationale = generateRationale(
+        CATALOG.find((p) => p.id === "toilet-cheap")!,
+        "toilet",
+        "minimalist-modern",
+        toiletOptions
+      );
+      expect(result.current.messages.at(-1)?.text).toBe(`Swapped the toilet for toilet-cheap — ${expectedRationale}.`);
     });
 
     it("explains instead of erroring when already at the cheapest option", async () => {
