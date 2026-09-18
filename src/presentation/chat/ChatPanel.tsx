@@ -2,17 +2,12 @@ import { useState } from "react";
 import type { KeyboardEvent } from "react";
 import "./ChatPanel.css";
 
-/**
- * Presentation-local for now, not Domain — same precedent as t18's
- * RoomDimensions/ThemeSelection, which only moved to Domain once
- * Application actually needed them. Promote this the same way if t26/t27
- * ever do.
- */
-export interface ChatMessage {
-  id: string;
-  role: "user" | "assistant";
-  text: string;
-}
+// Re-exported so existing imports of ChatMessage from this file keep
+// working — the type itself now lives in application/chat-orchestration.ts
+// (t27), which owns the state ChatMessage describes, same move t18 made
+// for RoomDimensions/ThemeSelection once Application needed them.
+import type { ChatMessage } from "../../application/chat-orchestration";
+export type { ChatMessage } from "../../application/chat-orchestration";
 
 export interface ChatPanelProps {
   messages: ChatMessage[];

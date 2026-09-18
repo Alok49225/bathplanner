@@ -36,7 +36,8 @@ export interface IntakeSolveResult {
 
 const DEBOUNCE_MS = 400;
 
-function toRoom(session: SessionState): Room {
+/** Exported so other Application-layer orchestration (chat-orchestration.ts, t27) reuses this exact conversion instead of duplicating it. */
+export function toRoom(session: SessionState): Room {
   return {
     ...session.room,
     accessibility: {},
