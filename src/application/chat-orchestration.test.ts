@@ -240,6 +240,40 @@ describe("useChatSolve", () => {
       expect(result.current.pinnedBundle).toBeNull();
       expect(result.current.messages.at(-1)?.role).toBe("assistant");
     });
+
+    it("gives category-specific guidance when a category is mentioned with no clear action", () => {
+      const { result } = renderChatSolve();
+      act(() => result.current.sendMessage("what about the toilet"));
+      expect(result.current.messages.at(-1)?.text).toBe(
+        'I can see you\'re asking about the toilet, but I\'m not sure what you\'d like — try "keep the toilet" or "swap the toilet for something cheaper."'
+      );
+    });
+
+    it("points back at the room details form for door/window/room-size requests", () => {
+      const { result } = renderChatSolve();
+      act(() => result.current.sendMessage("I need a bigger room"));
+      expect(result.current.messages.at(-1)?.text).toMatch(/room details form/i);
+    });
+
+    it("points back at the room details form for a window request", () => {
+      const { result } = renderChatSolve();
+      act(() => result.current.sendMessage("add a window"));
+      expect(result.current.messages.at(-1)?.text).toMatch(/room details form/i);
+    });
+
+    it("explains scope for a genuinely untracked product concept", () => {
+      const { result } = renderChatSolve();
+      act(() => result.current.sendMessage("can you add a bathtub"));
+      expect(result.current.messages.at(-1)?.text).toMatch(/toilet, vanity, faucet, shower, and lighting/i);
+    });
+
+    it("still falls back to the fully generic reply for text matching none of the above", () => {
+      const { result } = renderChatSolve();
+      act(() => result.current.sendMessage("what do you think of this room"));
+      expect(result.current.messages.at(-1)?.text).toBe(
+        'I didn\'t quite catch that — try things like "increase my budget by $500" or "keep the vanity".'
+      );
+    });
   });
 
   it("echoes the user's own message before replying", () => {

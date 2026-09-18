@@ -20,7 +20,7 @@ import type { IntakeSolveResult } from "./intake-orchestration";
 import type { CatalogRepository } from "../domain/catalog-repository";
 import type { Product, ProductCategory } from "../domain/types/product";
 import type { Bundle, BundleTier } from "../domain/types/bundle";
-import { parseIntent } from "../domain/engine/intent-parser";
+import { parseIntent, detectCategory } from "../domain/engine/intent-parser";
 import { filterEligibleProducts } from "../domain/engine/compatibility-rules";
 import { pinAndResolve } from "../domain/engine/pin-resolve";
 import type { PinResolveResult } from "../domain/engine/pin-resolve";
@@ -70,6 +70,40 @@ function reasonToMessage(result: Extract<PinResolveResult, { feasible: false }>)
         result.cheapestPossibleCents / 100
       )} — over budget.`;
   }
+}
+
+// Deliberate, small, explicit keyword lists — same deterministic philosophy
+// as t26, not an attempt at exhaustive NLP. Split into two groups because
+// they deserve different guidance: one points back at the actual form
+// control that already handles it, the other is genuinely nothing this
+// app tracks at all.
+const OUT_OF_SCOPE_ROOM_WORDS = /\b(door|window|room size|dimensions|resize|bigger room|smaller room)\b/;
+const OUT_OF_SCOPE_PRODUCT_WORDS =
+  /\b(bathtub|tub|paint|tile|flooring|mirror|ventilation|exhaust fan|fan|heated floor)\b/;
+
+/**
+ * Three-tier graceful fallback for text parseIntent couldn't classify —
+ * most-specific first. Never invents an action; only chooses which
+ * explanation to show. See intent-parser.ts's own doc comment: `unrecognized`
+ * was always meant to land here, this just makes "here" more helpful.
+ */
+function fallbackMessage(rawText: string): string {
+  const text = rawText.toLowerCase();
+
+  const category = detectCategory(text);
+  if (category) {
+    return `I can see you're asking about the ${category}, but I'm not sure what you'd like — try "keep the ${category}" or "swap the ${category} for something cheaper."`;
+  }
+
+  if (OUT_OF_SCOPE_ROOM_WORDS.test(text)) {
+    return "I can't resize the room or change doors/windows from chat — use the room details form above for that.";
+  }
+
+  if (OUT_OF_SCOPE_PRODUCT_WORDS.test(text)) {
+    return "I can only help with the toilet, vanity, faucet, shower, and lighting in this room — I can't change that from chat yet.";
+  }
+
+  return 'I didn\'t quite catch that — try things like "increase my budget by $500" or "keep the vanity".';
 }
 
 /** Closest eligible neighbor strictly cheaper/pricier than the current price — not the cheapest/priciest overall, so repeated swaps move one step at a time. */
@@ -193,7 +227,7 @@ export function useChatSolve({
         }
 
         case "unrecognized": {
-          reply("I didn't quite catch that — try things like \"increase my budget by $500\" or \"keep the vanity\".");
+          reply(fallbackMessage(intent.rawText));
           return;
         }
       }

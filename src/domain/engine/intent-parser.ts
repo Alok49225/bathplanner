@@ -31,7 +31,8 @@ const CATEGORY_PATTERNS: [ProductCategory, RegExp][] = [
   ["lighting", /\blighting\b|\blights?\b/],
 ];
 
-function detectCategory(text: string): ProductCategory | null {
+/** Exported so t29's fallback-message logic can reuse this exact matching instead of re-deriving it. */
+export function detectCategory(text: string): ProductCategory | null {
   for (const [category, pattern] of CATEGORY_PATTERNS) {
     if (pattern.test(text)) return category;
   }
