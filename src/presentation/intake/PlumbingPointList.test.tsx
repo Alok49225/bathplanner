@@ -73,6 +73,42 @@ describe("PlumbingPointList", () => {
     expect(options).toEqual(["toilet", "vanity", "shower"]);
   });
 
+  describe("prevents duplicate categories", () => {
+    it("Add plumbing point defaults to the next category not already present, not always toilet", async () => {
+      const onChange = vi.fn();
+      const user = userEvent.setup();
+      render(<PlumbingPointList value={[POINT_A]} onChange={onChange} room={ROOM} />); // toilet already exists
+      await user.click(screen.getByRole("button", { name: "Add plumbing point" }));
+      const points = onChange.mock.calls.at(-1)?.[0] as PlumbingPoint[];
+      expect(points.at(-1)?.category).toBe("vanity"); // next unused, not a second toilet
+    });
+
+    it("disables Add plumbing point once toilet, vanity, and shower are all present", () => {
+      const points: PlumbingPoint[] = [
+        POINT_A,
+        POINT_B,
+        { id: "s", category: "shower", position: { x: 20, y: 20 }, wall: "north" },
+      ];
+      render(<PlumbingPointList value={points} onChange={() => {}} room={ROOM} />);
+      expect(screen.getByRole("button", { name: "Add plumbing point" })).toBeDisabled();
+    });
+
+    it("excludes a category already used by another row from that row's own Category dropdown", () => {
+      render(<PlumbingPointList value={[POINT_A, POINT_B]} onChange={() => {}} room={ROOM} />);
+      const selects = screen.getAllByLabelText("Category") as HTMLSelectElement[];
+      const toiletRowOptions = Array.from(selects[0].options).map((o) => o.value);
+      // toilet (its own current value) stays selectable, vanity is taken by the other row, shower is free
+      expect(toiletRowOptions).toEqual(["toilet", "shower"]);
+    });
+
+    it("still lets a row keep its own category as an option even though it's technically 'taken'", () => {
+      render(<PlumbingPointList value={[POINT_A]} onChange={() => {}} room={ROOM} />);
+      const select = screen.getByLabelText("Category") as HTMLSelectElement;
+      expect(select.value).toBe("toilet");
+      expect(Array.from(select.options).map((o) => o.value)).toContain("toilet");
+    });
+  });
+
   describe("click-to-place", () => {
     it("does nothing until a category is selected", () => {
       const onChange = vi.fn();

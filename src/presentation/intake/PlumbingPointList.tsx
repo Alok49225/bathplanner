@@ -19,8 +19,21 @@ const CATEGORY_LABELS: Record<PlumbingPoint["category"], string> = {
   shower: "Shower",
 };
 
-function newPoint(): PlumbingPoint {
-  return { id: `plumbing-${crypto.randomUUID()}`, category: "toilet", position: { x: 0, y: 0 }, wall: "south" };
+function newPoint(category: PlumbingPoint["category"]): PlumbingPoint {
+  return { id: `plumbing-${crypto.randomUUID()}`, category, position: { x: 0, y: 0 }, wall: "south" };
+}
+
+/**
+ * The engine only ever reads the first point per category
+ * (tier-generator's resolvePlumbingPoints does room.plumbing.find(...)), so
+ * a second point for a category already present isn't a second fixture —
+ * it's inert data nothing reads, and its Remove button is the only thing
+ * about it a user can actually "control". Used both to pick a sane default
+ * for the Add button and to keep each row's own Category dropdown from
+ * letting a manual edit create the same problem.
+ */
+function unusedCategories(value: PlumbingPoint[], keep?: PlumbingPoint["category"]): PlumbingPoint["category"][] {
+  return CATEGORIES.filter((c) => c === keep || !value.some((p) => p.category === c));
 }
 
 /**
@@ -43,6 +56,7 @@ function nearestWall(position: Point, room: RoomDimensions): Wall {
 
 export function PlumbingPointList({ value, onChange, room }: PlumbingPointListProps) {
   const [selectedCategory, setSelectedCategory] = useState<PlumbingPoint["category"] | null>(null);
+  const [nextCategory] = unusedCategories(value);
 
   function updatePoint(id: string, patch: Partial<PlumbingPoint>) {
     onChange(value.map((p) => (p.id === id ? { ...p, ...patch } : p)));
@@ -65,7 +79,12 @@ export function PlumbingPointList({ value, onChange, room }: PlumbingPointListPr
     <div className="list-editor">
       <div className="list-editor-header">
         <h4>Plumbing rough-ins</h4>
-        <button type="button" onClick={() => onChange([...value, newPoint()])}>
+        <button
+          type="button"
+          disabled={!nextCategory}
+          title={nextCategory ? undefined : "Toilet, vanity, and shower are all already added."}
+          onClick={() => nextCategory && onChange([...value, newPoint(nextCategory)])}
+        >
           Add plumbing point
         </button>
       </div>
@@ -102,7 +121,7 @@ export function PlumbingPointList({ value, onChange, room }: PlumbingPointListPr
               value={point.category}
               onChange={(e) => updatePoint(point.id, { category: e.target.value as PlumbingPoint["category"] })}
             >
-              {CATEGORIES.map((c) => (
+              {unusedCategories(value, point.category).map((c) => (
                 <option key={c} value={c}>
                   {c}
                 </option>
