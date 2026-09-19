@@ -174,6 +174,25 @@ describe("PlumbingPointList", () => {
       expect(Number(marker.getAttribute("cy"))).toBe(20);
     });
 
+    it("recomputes wall when an existing point is moved, instead of leaving it stale", async () => {
+      // POINT_B starts at (50, 90) with wall "south" — the nearest wall
+      // there. Moving it to (10, 20) is nearest to "west" instead; if wall
+      // isn't recomputed, fit-validator would keep checking clearance
+      // against the wrong wall and can silently reject every product in
+      // this category even though the new position is fine.
+      const onChange = vi.fn();
+      const user = userEvent.setup();
+      const { container } = render(<PlumbingPointList value={[POINT_B]} onChange={onChange} room={ROOM} />);
+      await user.click(screen.getByRole("radio", { name: "Vanity" }));
+
+      const svg = container.querySelector("svg")!;
+      stubSvgTransform(svg, 10);
+      fireEvent.click(svg, { clientX: 100, clientY: 200 });
+
+      const points = onChange.mock.calls.at(-1)?.[0] as PlumbingPoint[];
+      expect(points[0].wall).toBe("west");
+    });
+
     it("keeps the manual X/Y inputs usable after a point was placed by clicking", async () => {
       const onChange = vi.fn();
       const user = userEvent.setup();

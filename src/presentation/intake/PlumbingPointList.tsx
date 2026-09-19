@@ -69,7 +69,13 @@ export function PlumbingPointList({ value, onChange, room }: PlumbingPointListPr
   function handlePlace(category: PlumbingPoint["category"], position: Point) {
     const existing = value.find((p) => p.category === category);
     if (existing) {
-      updatePoint(existing.id, { position });
+      // Recompute wall too, not just position — leaving the old wall in
+      // place after a move is exactly the bug this fixes: fit-validator
+      // uses wall as the clearance "front" direction, so a stale value
+      // silently checks clearance against the wrong wall and can fail
+      // every product in the category with a confusing "no eligible
+      // options" error even though the new position is perfectly fine.
+      updatePoint(existing.id, { position, wall: nearestWall(position, room) });
     } else {
       onChange([...value, { id: `plumbing-${crypto.randomUUID()}`, category, position, wall: nearestWall(position, room) }]);
     }
