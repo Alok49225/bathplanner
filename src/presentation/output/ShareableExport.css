@@ -1,0 +1,62 @@
+.shareable-export {
+  font-family: system-ui, sans-serif;
+}
+
+.shareable-export-toolbar {
+  margin-bottom: 16px;
+}
+
+.shareable-export-toolbar button {
+  font-size: 13px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  /* #0f5c66 — the project's one accent color, same as every other primary action. */
+  background: #0f5c66;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.shareable-export-sheet {
+  max-width: 700px;
+  background: #ffffff;
+}
+
+.shareable-export-title {
+  font-size: 18px;
+  margin: 0 0 4px;
+  color: #181f1d;
+}
+
+.shareable-export-meta {
+  font-size: 13px;
+  color: #526059;
+  margin: 0 0 16px;
+}
+
+/* FloorPlan and FixtureLayer share the same viewBox convention (t20/t21) —
+   same stacking pattern already used composing the real app page. */
+.shareable-export-plan-stack {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.shareable-export-fixture-overlay {
+  position: absolute;
+  inset: 0;
+}
+
+@media print {
+  .shareable-export-toolbar {
+    display: none;
+  }
+
+  .shareable-export-sheet {
+    max-width: none;
+  }
+
+  .shareable-export-plan-stack,
+  .bundle-summary {
+    break-inside: avoid;
+  }
+}
