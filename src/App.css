@@ -29,13 +29,24 @@
   min-width: 280px;
 }
 
-/* FloorPlan and FixtureLayer share the same viewBox convention (t20/t21) —
-   stacking them here is the exact composition both were designed for. */
+/*
+ * FloorPlan and FixtureLayer share the same viewBox convention (t20/t21) —
+ * stacking them here is the exact composition both were designed for.
+ *
+ * Grid stacking (both children in the same grid-area), not
+ * position:absolute — absolute positioning only sizes to FloorPlan's own
+ * height, so FixtureLayer's legend (rendered below its svg) would overflow
+ * past that box uncounted, landing wherever it happened to fall relative to
+ * whatever comes next in normal flow. Grid sizes the shared cell to the
+ * *taller* of the two children, so the legend properly reserves real
+ * space and the gap to BundleSummary is measured from its true bottom
+ * edge, at any width (the legend wraps to 2 lines on narrow viewports).
+ */
 .app-plan-stack {
-  position: relative;
+  display: grid;
+  align-items: start;
 }
 
-.app-fixture-overlay {
-  position: absolute;
-  inset: 0;
+.app-plan-stack > * {
+  grid-area: 1 / 1;
 }

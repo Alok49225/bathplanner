@@ -67,9 +67,7 @@ function App() {
               <TierSwitcher tiers={solvedTiers} selectedTier={selectedTier} onChange={setSelectedTier} />
               <div className="app-plan-stack">
                 <FloorPlan room={session.room} showLegend={false} />
-                <div className="app-fixture-overlay">
-                  <FixtureLayer bundle={displayedBundle} catalog={catalog} room={session.room} />
-                </div>
+                <FixtureLayer bundle={displayedBundle} catalog={catalog} room={session.room} />
               </div>
               <BundleSummary bundle={displayedBundle} catalog={catalog} />
             </>
