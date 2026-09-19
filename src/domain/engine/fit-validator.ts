@@ -125,7 +125,7 @@ export function validateFit(placements: FloorFixturePlacement[], room: Room): Fi
       issues.push({
         severity: "error",
         code: "no-plumbing-point",
-        message: `No ${placement.category} rough-in matches plumbing point "${placement.plumbingPointId}".`,
+        message: `No ${placement.category} rough-in found for this bundle.`,
         category: placement.category,
       });
     }
@@ -145,7 +145,7 @@ export function validateFit(placements: FloorFixturePlacement[], room: Room): Fi
       issues.push({
         severity: "error",
         code: "out-of-bounds",
-        message: `${placement.category} at "${placement.plumbingPointId}" doesn't fit within the room's footprint.`,
+        message: `${placement.category} doesn't fit within the room's footprint.`,
         category: placement.category,
       });
     }
@@ -164,7 +164,7 @@ export function validateFit(placements: FloorFixturePlacement[], room: Room): Fi
         issues.push({
           severity: "error",
           code: "overlaps-fixture",
-          message: `${placement.category} at "${placement.plumbingPointId}" physically overlaps ${other.placement.category} at "${other.placement.plumbingPointId}".`,
+          message: `${placement.category} physically overlaps ${other.placement.category}.`,
           category: placement.category,
         });
       } else if (intersects(clearZone, otherFootprint)) {
@@ -176,7 +176,7 @@ export function validateFit(placements: FloorFixturePlacement[], room: Room): Fi
       issues.push({
         severity: "warning",
         code: "insufficient-clearance",
-        message: `${placement.category} at "${placement.plumbingPointId}" has less than the recommended ${clearance.front}in front clearance.`,
+        message: `${placement.category} has less than the recommended ${clearance.front}in front clearance.`,
         category: placement.category,
       });
     }

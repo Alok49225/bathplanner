@@ -158,4 +158,66 @@ describe("validateFit", () => {
     const categories: FloorFixtureCategory[] = ["toilet", "vanity", "shower"];
     issues.forEach((issue) => expect(categories).toContain(issue.category));
   });
+
+  describe("messages stay human-readable — no leaked internal IDs", () => {
+    // These messages flow straight into Bundle.warnings and get shown
+    // verbatim in BundleSummary/chat — a raw plumbing-point UUID in there
+    // is meaningless noise to a user, not a helpful detail.
+    it("doesn't include the plumbing point id in the no-plumbing-point message", () => {
+      const room = makeRoom();
+      const placements: FloorFixturePlacement[] = [
+        { category: "toilet", product: makeProduct(), plumbingPointId: "plumbing-abc123-should-not-appear" },
+      ];
+      const [issue] = validateFit(placements, room);
+      expect(issue.message).toBe("No toilet rough-in found for this bundle.");
+      expect(issue.message).not.toContain("plumbing-abc123-should-not-appear");
+    });
+
+    it("doesn't include the plumbing point id in the out-of-bounds message", () => {
+      const room = makeRoom({
+        widthIn: 20,
+        plumbing: [{ id: "plumbing-should-not-appear", category: "toilet", position: { x: 10, y: 90 }, wall: "south" }],
+      });
+      const placements: FloorFixturePlacement[] = [
+        { category: "toilet", product: makeProduct(), plumbingPointId: "plumbing-should-not-appear" },
+      ];
+      const [issue] = validateFit(placements, room);
+      expect(issue.message).toBe("toilet doesn't fit within the room's footprint.");
+      expect(issue.message).not.toContain("plumbing-should-not-appear");
+    });
+
+    it("doesn't include either plumbing point id in the overlaps-fixture message", () => {
+      const room = makeRoom({
+        plumbing: [
+          { id: "plumbing-toilet-should-not-appear", category: "toilet", position: { x: 10, y: 90 }, wall: "south" },
+          { id: "plumbing-vanity-should-not-appear", category: "vanity", position: { x: 12, y: 90 }, wall: "south" },
+        ],
+      });
+      const placements: FloorFixturePlacement[] = [
+        { category: "toilet", product: makeProduct({ category: "toilet" }), plumbingPointId: "plumbing-toilet-should-not-appear" },
+        {
+          category: "vanity",
+          product: makeProduct({ category: "vanity", dimensions: { width: 30, depth: 21, height: 34 } }),
+          plumbingPointId: "plumbing-vanity-should-not-appear",
+        },
+      ];
+      const issues = validateFit(placements, room);
+      const overlapIssue = issues.find((i) => i.code === "overlaps-fixture")!;
+      expect(overlapIssue.message).toBe("toilet physically overlaps vanity.");
+      expect(overlapIssue.message).not.toContain("plumbing-");
+    });
+
+    it("doesn't include the plumbing point id in the insufficient-clearance message", () => {
+      const room = makeRoom({
+        lengthIn: 40,
+        plumbing: [{ id: "plumbing-should-not-appear", category: "toilet", position: { x: 10, y: 35 }, wall: "south" }],
+      });
+      const placements: FloorFixturePlacement[] = [
+        { category: "toilet", product: makeProduct(), plumbingPointId: "plumbing-should-not-appear" },
+      ];
+      const [issue] = validateFit(placements, room);
+      expect(issue.message).toBe("toilet has less than the recommended 21in front clearance.");
+      expect(issue.message).not.toContain("plumbing-should-not-appear");
+    });
+  });
 });
