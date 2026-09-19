@@ -249,6 +249,14 @@ describe("useChatSolve", () => {
       );
     });
 
+    it("gives swap-specific guidance (not the fully generic message) when 'swap' is used with no direction", () => {
+      const { result } = renderChatSolve();
+      act(() => result.current.sendMessage("swap the shower"));
+      expect(result.current.messages.at(-1)?.text).toBe(
+        'I can tell you want to swap the shower — just say cheaper or pricier, e.g. "swap the shower for something cheaper."'
+      );
+    });
+
     it("points back at the room details form for door/window/room-size requests", () => {
       const { result } = renderChatSolve();
       act(() => result.current.sendMessage("I need a bigger room"));
@@ -280,5 +288,47 @@ describe("useChatSolve", () => {
     const { result } = renderChatSolve();
     act(() => result.current.sendMessage("hello"));
     expect(result.current.messages[0]).toMatchObject({ role: "user", text: "hello" });
+  });
+
+  describe("pinnedBundle invalidation", () => {
+    it("clears a prior pin once a fresh solve replaces solve.tiers, instead of silently showing stale data", async () => {
+      const { result, rerender } = renderChatSolve();
+      act(() => result.current.sendMessage("keep the toilet"));
+      await flushMicrotasks();
+      expect(result.current.pinnedBundle).not.toBeNull();
+
+      // A brand-new solve.tiers array — the same shape a real re-solve
+      // (e.g. after a room/budget edit) would produce.
+      const freshSolve: IntakeSolveResult = {
+        status: "solved",
+        tiers: [makeBundle("value"), makeBundle("balanced"), makeBundle("premium")],
+      };
+      rerender({
+        session: baseSession(),
+        patchSession: vi.fn(),
+        repository: new FakeCatalogRepository(CATALOG),
+        solve: freshSolve,
+        selectedTier: "balanced",
+      });
+
+      expect(result.current.pinnedBundle).toBeNull();
+    });
+
+    it("does not clear the pin merely because the hook re-renders with the same solve.tiers reference", async () => {
+      const { result, rerender } = renderChatSolve();
+      act(() => result.current.sendMessage("keep the toilet"));
+      await flushMicrotasks();
+      expect(result.current.pinnedBundle).not.toBeNull();
+
+      rerender({
+        session: baseSession(),
+        patchSession: vi.fn(),
+        repository: new FakeCatalogRepository(CATALOG),
+        solve: SOLVED, // same reference as the initial render
+        selectedTier: "balanced",
+      });
+
+      expect(result.current.pinnedBundle).not.toBeNull();
+    });
   });
 });

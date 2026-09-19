@@ -5,15 +5,15 @@
  * for pin/swap it's pinAndResolve (t12), which the form has never called
  * but is the real, correct engine primitive for "lock this in"/"swap it."
  *
- * Deliberately doesn't try to merge a pin/swap result back into
- * IntakeSolveResult.tiers — there's no real page composing TierSwitcher/
- * FloorPlan/BundleSummary/ChatPanel together yet, so `pinnedBundle` is
- * exposed as its own explicit piece of state for whichever future
- * integration task does that composition, rather than silently guessing
- * how it should display.
+ * Deliberately doesn't merge a pin/swap result back into
+ * IntakeSolveResult.tiers — `pinnedBundle` stays its own explicit piece of
+ * state instead, and the composing page (App.tsx) decides whether to show
+ * it in place of the auto-solved bundle for the selected tier. It's reset
+ * to null whenever `solve.tiers` changes, since a fresh solve means the
+ * pin was computed against session state that's no longer current.
  */
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { SessionState } from "./session-state";
 import { toRoom } from "./intake-orchestration";
 import type { IntakeSolveResult } from "./intake-orchestration";
@@ -80,9 +80,14 @@ function reasonToMessage(result: Extract<PinResolveResult, { feasible: false }>)
 const OUT_OF_SCOPE_ROOM_WORDS = /\b(door|window|room size|dimensions|resize|bigger room|smaller room)\b/;
 const OUT_OF_SCOPE_PRODUCT_WORDS =
   /\b(bathtub|tub|paint|tile|flooring|mirror|ventilation|exhaust fan|fan|heated floor)\b/;
+// A generic swap verb with no cheaper/pricier word — parseIntent correctly
+// refuses to guess a direction (same "never invent an intent" principle as
+// everywhere else), but the fallback can still be more specific than "not
+// sure what you'd like" once it's this close to a real swap-item intent.
+const SWAP_VERB_WORDS = /\b(swap|change|replace|different|another)\b/;
 
 /**
- * Three-tier graceful fallback for text parseIntent couldn't classify —
+ * Four-tier graceful fallback for text parseIntent couldn't classify —
  * most-specific first. Never invents an action; only chooses which
  * explanation to show. See intent-parser.ts's own doc comment: `unrecognized`
  * was always meant to land here, this just makes "here" more helpful.
@@ -92,6 +97,9 @@ function fallbackMessage(rawText: string): string {
 
   const category = detectCategory(text);
   if (category) {
+    if (SWAP_VERB_WORDS.test(text)) {
+      return `I can tell you want to swap the ${category} — just say cheaper or pricier, e.g. "swap the ${category} for something cheaper."`;
+    }
     return `I can see you're asking about the ${category}, but I'm not sure what you'd like — try "keep the ${category}" or "swap the ${category} for something cheaper."`;
   }
 
@@ -128,6 +136,16 @@ export function useChatSolve({
 }: UseChatSolveArgs): UseChatSolveResult {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [pinnedBundle, setPinnedBundle] = useState<Bundle | null>(null);
+
+  // A fresh solve.tiers means the room/budget/theme changed and the form
+  // re-solved from scratch — any earlier chat pin was computed against
+  // session state that's now stale, so it can't keep silently overriding
+  // the real current result. pinAndResolve itself never touches solve.tiers,
+  // so this only fires on a genuine new solve, never as a side effect of
+  // the chat's own pin/swap actions.
+  useEffect(() => {
+    setPinnedBundle(null);
+  }, [solve.tiers]);
 
   const reply = useCallback((text: string) => {
     setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: "assistant", text }]);

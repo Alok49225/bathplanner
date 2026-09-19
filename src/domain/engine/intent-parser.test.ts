@@ -108,6 +108,22 @@ describe("parseIntent", () => {
         direction: "cheaper",
       });
     });
+
+    it("recognizes bare 'expensive', not just the two-word phrase 'more expensive'", () => {
+      expect(parseIntent("swap the shower to a expensive one")).toEqual({
+        kind: "swap-item",
+        category: "shower",
+        direction: "pricier",
+      });
+    });
+
+    it("still recognizes the 'more expensive' phrasing too", () => {
+      expect(parseIntent("I want a more expensive faucet")).toEqual({
+        kind: "swap-item",
+        category: "faucet",
+        direction: "pricier",
+      });
+    });
   });
 
   describe("precedence", () => {

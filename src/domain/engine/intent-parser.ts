@@ -45,7 +45,7 @@ const DELTA_UP_WORDS = /\b(increase|raise|add|up|more)\b/;
 const DELTA_DOWN_WORDS = /\b(decrease|lower|reduce|drop|cut|less)\b/;
 const PIN_WORDS = /\b(keep|pin|lock|stick with|stay with)\b/;
 const CHEAPER_WORDS = /\b(cheap|cheaper|less expensive|lower cost|downgrade|inexpensive)\b/;
-const PRICIER_WORDS = /\b(nicer|nice|premium|pricier|more expensive|upgrade|luxury|better|fancier)\b/;
+const PRICIER_WORDS = /\b(nicer|nice|premium|pricier|expensive|upgrade|luxury|better|fancier)\b/;
 
 function parseAmountCents(text: string): number | null {
   const match = text.match(AMOUNT_PATTERN);
