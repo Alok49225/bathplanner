@@ -4,6 +4,8 @@ An AI-assisted bathroom designer & planner, built as a KOHLER case-study prototy
 
 **Live demo:** https://kohlerbathplanner.vercel.app
 
+**Submission materials:** [Prompts & Workflow Documentation](./docs/prompts-documentation.pdf) · [Presentation Deck](./docs/presentation-deck.pdf) · [Video Demonstration](./docs/bath-planner-demo.mp4)
+
 ## What it does
 
 - **Describe the room** — width, length, ceiling height, doors, windows — then place toilet, vanity, and shower rough-ins either by typing exact coordinates or by clicking directly on the rendered floor plan.
@@ -14,7 +16,7 @@ An AI-assisted bathroom designer & planner, built as a KOHLER case-study prototy
 
 ## Why it's built this way — a note on the "AI" in this design
 
-Every "smart" behavior in this app — the constraint solver, the chat's intent recognition, the rationale text — is **deterministic**, not a live LLM call. That's a deliberate reliability choice, not an oversight: it means the prototype runs identically every time, needs no API key or network dependency, and every one of its 300+ automated tests is fully repeatable. The chat layer in particular is architected so a real model could be dropped in later (the intent-parsing step is fully isolated from the solver it drives) without touching the underlying engine — see the Prompts Documentation for the fuller reasoning and where a model would extend this today.
+Every "smart" behavior in this app — the constraint solver, the chat's intent recognition, the rationale text — is **deterministic**, not a live LLM call. That's a deliberate reliability choice, not an oversight: it means the prototype runs identically every time, needs no API key or network dependency, and every one of its 300+ automated tests is fully repeatable. The chat layer in particular is architected so a real model could be dropped in later (the intent-parsing step is fully isolated from the solver it drives) without touching the underlying engine — see the [Prompts Documentation](./docs/prompts-documentation.pdf) for the fuller reasoning and where a model would extend this today.
 
 ## Architecture
 
