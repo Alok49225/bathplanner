@@ -1,6 +1,6 @@
 # Bath Planner
 
-An AI-assisted bathroom designer & planner, built as a KOHLER case-study prototype. Given a room's dimensions, a budget, and a style preference, it runs a constraint solver over a real product catalog to generate three physically-valid, explainable bathroom bundles — then lets you refine the result by clicking directly on a floor plan or by asking for changes in plain English.
+An AI-assisted bathroom designer & planner, built as a case-study prototype. Given a room's dimensions, a budget, and a style preference, it runs a constraint solver over a real product catalog to generate three physically-valid, explainable bathroom bundles — then lets you refine the result by clicking directly on a floor plan or by asking for changes in plain English.
 
 **Live demo:** https://kohlerbathplanner.vercel.app
 
