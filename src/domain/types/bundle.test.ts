@@ -57,7 +57,7 @@ describe("Bundle schema", () => {
   it("keeps each line item's own category field consistent with its key", () => {
     const bundle = makeBundle();
     (Object.keys(bundle.items) as ProductCategory[]).forEach((key) => {
-      expect(bundle.items[key].category).toBe(key);
+      expect(bundle.items[key]!.category).toBe(key);
     });
   });
 
@@ -85,14 +85,14 @@ describe("Bundle schema", () => {
 
   it("leaves rationale undefined until t11 fills it in, never a placeholder string", () => {
     const bundle = makeBundle();
-    expect(bundle.items.toilet.rationale).toBeUndefined();
+    expect(bundle.items.toilet!.rationale).toBeUndefined();
     const withRationale = makeBundle({
       items: {
         ...makeBundle().items,
         toilet: makeLineItem("toilet", { rationale: "Fits the comfort-height requirement." }),
       },
     });
-    expect(withRationale.items.toilet.rationale).toContain("comfort-height");
+    expect(withRationale.items.toilet!.rationale).toContain("comfort-height");
   });
 
   it("keeps sustainabilityScore optional and within 0-1 when present", () => {
@@ -106,7 +106,7 @@ describe("Bundle schema", () => {
   it("references a placement position for every line item", () => {
     const bundle = makeBundle();
     (Object.keys(bundle.items) as ProductCategory[]).forEach((key) => {
-      const position = bundle.items[key].placement.position;
+      const position = bundle.items[key]!.placement.position;
       expect(typeof position.x).toBe("number");
       expect(typeof position.y).toBe("number");
     });

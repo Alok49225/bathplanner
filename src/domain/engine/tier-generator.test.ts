@@ -78,17 +78,17 @@ describe("generateTiers", () => {
     if (!result.feasible) throw new Error("expected feasible");
     const [value, balanced, premium] = result.tiers;
 
-    expect(value.items.toilet.productId).toBe("toilet-exp");
-    expect(value.items.vanity.productId).toBe("vanity-cheap");
-    expect(value.items.shower.productId).toBe("shower-cheap");
+    expect(value.items.toilet!.productId).toBe("toilet-exp");
+    expect(value.items.vanity!.productId).toBe("vanity-cheap");
+    expect(value.items.shower!.productId).toBe("shower-cheap");
 
-    expect(balanced.items.shower.productId).toBe("shower-exp");
-    expect(balanced.items.toilet.productId).toBe("toilet-exp");
-    expect(balanced.items.vanity.productId).toBe("vanity-cheap");
+    expect(balanced.items.shower!.productId).toBe("shower-exp");
+    expect(balanced.items.toilet!.productId).toBe("toilet-exp");
+    expect(balanced.items.vanity!.productId).toBe("vanity-cheap");
 
-    expect(premium.items.shower.productId).toBe("shower-exp");
-    expect(premium.items.vanity.productId).toBe("vanity-exp");
-    expect(premium.items.toilet.productId).toBe("toilet-exp");
+    expect(premium.items.shower!.productId).toBe("shower-exp");
+    expect(premium.items.vanity!.productId).toBe("vanity-exp");
+    expect(premium.items.toilet!.productId).toBe("toilet-exp");
   });
 
   it("labels each tier correctly and carries the original budget, not the tier's cap", () => {
@@ -111,8 +111,8 @@ describe("generateTiers", () => {
     const result = generateTiers(CATALOG, ROOM, 400000, "minimalist-modern");
     if (!result.feasible) throw new Error("expected feasible");
     const [value] = result.tiers;
-    expect(value.items.faucet.placement.position).toEqual(value.items.vanity.placement.position);
-    expect(value.items.lighting.placement.position).toEqual(value.items.vanity.placement.position);
+    expect(value.items.faucet!.placement.position).toEqual(value.items.vanity!.placement.position);
+    expect(value.items.lighting!.placement.position).toEqual(value.items.vanity!.placement.position);
   });
 
   it("sets sustainabilityScore from t9's water-efficiency sub-score", () => {

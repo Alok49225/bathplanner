@@ -74,7 +74,7 @@ describe("FixtureLayer", () => {
 
     const expected = footprintRect(
       CATALOG[0],
-      bundle.items.toilet.placement.position,
+      bundle.items.toilet!.placement.position,
       ROOM.plumbing.find((p) => p.category === "toilet")!.wall
     );
     const rect = screen.getByTestId("fixture-toilet");
@@ -109,8 +109,8 @@ describe("FixtureLayer", () => {
     const vanityPos = ROOM.plumbing.find((p) => p.category === "vanity")!.position;
     render(<FixtureLayer bundle={bundle} catalog={CATALOG} room={ROOM} />);
     // the offset is purely a rendering concern — the Bundle object itself is untouched
-    expect(bundle.items.faucet.placement.position).toEqual(vanityPos);
-    expect(bundle.items.lighting.placement.position).toEqual(vanityPos);
+    expect(bundle.items.faucet!.placement.position).toEqual(vanityPos);
+    expect(bundle.items.lighting!.placement.position).toEqual(vanityPos);
   });
 
   it("renders toilet, vanity, and shower as rects and faucet/lighting as polygon markers", () => {
@@ -266,7 +266,7 @@ describe("FixtureLayer", () => {
       const { container } = render(<FixtureLayer bundle={bundle} catalog={TIGHT_CATALOG} room={TIGHT_ROOM} />);
       const toiletProduct = TIGHT_CATALOG.find((p) => p.id === "toilet-1")!;
       const toiletPoint = TIGHT_ROOM.plumbing.find((p) => p.category === "toilet")!;
-      const footprint = footprintRect(toiletProduct, bundle.items.toilet.placement.position, toiletPoint.wall);
+      const footprint = footprintRect(toiletProduct, bundle.items.toilet!.placement.position, toiletPoint.wall);
       const expected = clearanceRect(footprint, toiletPoint.wall, resolveClearance(toiletProduct, "toilet"));
 
       const overlay = container.querySelector('[data-testid="clearance-toilet"]');

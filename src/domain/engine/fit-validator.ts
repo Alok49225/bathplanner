@@ -15,7 +15,7 @@
  */
 
 import type { Product } from "../types/product";
-import type { Room, Wall } from "../types/room";
+import type { Room, Wall, Window } from "../types/room";
 
 export type FloorFixtureCategory = "toilet" | "vanity" | "shower";
 
@@ -27,7 +27,7 @@ export interface FloorFixturePlacement {
 
 export interface FitIssue {
   severity: "error" | "warning";
-  code: "no-plumbing-point" | "out-of-bounds" | "overlaps-fixture" | "insufficient-clearance";
+  code: "no-plumbing-point" | "out-of-bounds" | "overlaps-fixture" | "insufficient-clearance" | "overlaps-window";
   message: string;
   category: FloorFixtureCategory;
 }
@@ -89,11 +89,36 @@ export function clearanceRect(footprint: Rect, wall: Wall, clearance: Clearance)
   }
 }
 
-function intersects(a: Rect, b: Rect): boolean {
+/**
+ * A window has no floor footprint of its own — it's an opening in the wall,
+ * not a fixture — and unlike two fixtures' bodies, there's no reliable "back
+ * against the wall" coordinate to anchor a 2D rect to: a manually clicked
+ * point can easily land a couple inches off the exact wall line, which a
+ * thin-sliver-at-the-wall rect would then miss entirely. So this asks the
+ * same question placement-solver.ts's `openSegments` already asks when
+ * deciding where auto-placement may put a new fixture: does the fixture's
+ * own along-the-wall span overlap the window's, on that same wall — a plain
+ * 1D interval check, not a 2D one. Doesn't model sill height (a window
+ * mounted high enough above a low fixture might be perfectly fine) — same
+ * coarse simplification this file's own doc comment already applies to
+ * clearance and door swings.
+ */
+function alongWallSpan(footprint: Rect, wall: Wall): [number, number] {
+  return wall === "north" || wall === "south" ? [footprint.x1, footprint.x2] : [footprint.y1, footprint.y2];
+}
+
+function overlapsWindow(footprint: Rect, wall: Wall, windows: Window[]): boolean {
+  const [start, end] = alongWallSpan(footprint, wall);
+  return windows.some((w) => w.wall === wall && start < w.offset + w.widthIn && end > w.offset);
+}
+
+/** Exported for the placement solver — same overlap check validateFit uses internally. */
+export function intersects(a: Rect, b: Rect): boolean {
   return a.x1 < b.x2 && a.x2 > b.x1 && a.y1 < b.y2 && a.y2 > b.y1;
 }
 
-function withinRoom(rect: Rect, room: Room): boolean {
+/** Exported for the placement solver — same bounds check validateFit uses internally. */
+export function withinRoom(rect: Rect, room: Room): boolean {
   return rect.x1 >= 0 && rect.y1 >= 0 && rect.x2 <= room.widthIn && rect.y2 <= room.lengthIn;
 }
 
@@ -177,6 +202,19 @@ export function validateFit(placements: FloorFixturePlacement[], room: Room): Fi
         severity: "warning",
         code: "insufficient-clearance",
         message: `${placement.category} has less than the recommended ${clearance.front}in front clearance.`,
+        category: placement.category,
+      });
+    }
+
+    // A safety net for manual placement, which (unlike auto-placement's
+    // openSegments) never avoided windows in the first place — a warning,
+    // not an error, since a window mounted well above a low fixture may be
+    // perfectly fine in practice (see windowRect's own doc comment).
+    if (overlapsWindow(footprint, point.wall, room.windows)) {
+      issues.push({
+        severity: "warning",
+        code: "overlaps-window",
+        message: `${placement.category} is placed right at a window.`,
         category: placement.category,
       });
     }

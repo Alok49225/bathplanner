@@ -66,6 +66,17 @@
   color: #526059;
 }
 
+.bundle-summary-item-omitted .bundle-summary-item-category {
+  color: #8a9590;
+}
+
+.bundle-summary-item-omitted-reason {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  font-style: italic;
+  color: #8a9590;
+}
+
 .bundle-summary-total {
   display: flex;
   justify-content: space-between;

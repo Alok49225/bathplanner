@@ -175,7 +175,7 @@ export function useChatSolve({
         if (kind === "swap") {
           // buildBundle (t10) already ran generateRationale (t11) for every
           // item, including this one — reusing it here, not re-deriving it.
-          const rationale = result.bundle.items[category].rationale;
+          const rationale = result.bundle.items[category]?.rationale;
           reply(`Swapped the ${category} for ${productName}${rationale ? ` — ${rationale}` : ""}.`);
         } else {
           reply(`Locked in ${productName} for the ${category} — it'll stay in your ${selectedTier} bundle.`);
@@ -209,7 +209,12 @@ export function useChatSolve({
             return;
           }
           const bundle = solve.tiers.find((b) => b.tier === selectedTier)!;
-          void applyPin("pin", intent.category, bundle.items[intent.category].productId);
+          const currentItem = bundle.items[intent.category];
+          if (!currentItem) {
+            reply(`There's no ${intent.category} in this bundle — the room was too small to fit one.`);
+            return;
+          }
+          void applyPin("pin", intent.category, currentItem.productId);
           return;
         }
 
@@ -223,7 +228,12 @@ export function useChatSolve({
             return;
           }
           const bundle = solve.tiers.find((b) => b.tier === selectedTier)!;
-          const currentProductId = bundle.items[intent.category].productId;
+          const currentItem = bundle.items[intent.category];
+          if (!currentItem) {
+            reply(`There's no ${intent.category} in this bundle — the room was too small to fit one.`);
+            return;
+          }
+          const currentProductId = currentItem.productId;
 
           void (async () => {
             const catalog = await repository.getAll();

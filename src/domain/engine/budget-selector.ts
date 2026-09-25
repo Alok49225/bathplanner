@@ -9,7 +9,7 @@ import type { Product, ProductCategory } from "../types/product";
 import { PRODUCT_CATEGORIES } from "../types/product";
 
 export type SelectionResult =
-  | { feasible: true; items: Record<ProductCategory, Product>; totalPriceCents: number }
+  | { feasible: true; items: Partial<Record<ProductCategory, Product>>; totalPriceCents: number }
   | { feasible: false; reason: "no-eligible-options"; category: ProductCategory }
   | { feasible: false; reason: "over-budget"; cheapestPossibleCents: number };
 
@@ -17,26 +17,31 @@ function cheapest(products: Product[]): Product {
   return products.reduce((min, p) => (p.priceCents < min.priceCents ? p : min));
 }
 
-function sumPrices(items: Record<ProductCategory, Product>): number {
-  return PRODUCT_CATEGORIES.reduce((sum, category) => sum + items[category].priceCents, 0);
+/** Safe to assert non-null: callers only ever pass the same `categories` list
+ * that was just used to populate every one of `items`'s keys. */
+function sumPrices(items: Partial<Record<ProductCategory, Product>>, categories: ProductCategory[]): number {
+  return categories.reduce((sum, category) => sum + items[category]!.priceCents, 0);
 }
 
 export function selectWithinBudget(
   eligibleByCategory: Record<ProductCategory, Product[]>,
   budgetCents: number,
-  pinned: Partial<Record<ProductCategory, Product>> = {}
+  pinned: Partial<Record<ProductCategory, Product>> = {},
+  omittedCategories: ProductCategory[] = []
 ): SelectionResult {
-  for (const category of PRODUCT_CATEGORIES) {
+  const activeCategories = PRODUCT_CATEGORIES.filter((category) => !omittedCategories.includes(category));
+
+  for (const category of activeCategories) {
     if (!pinned[category] && !eligibleByCategory[category]?.length) {
       return { feasible: false, reason: "no-eligible-options", category };
     }
   }
 
-  const items = {} as Record<ProductCategory, Product>;
-  for (const category of PRODUCT_CATEGORIES) {
+  const items = {} as Partial<Record<ProductCategory, Product>>;
+  for (const category of activeCategories) {
     items[category] = pinned[category] ?? cheapest(eligibleByCategory[category]);
   }
-  let total = sumPrices(items);
+  let total = sumPrices(items, activeCategories);
 
   if (total > budgetCents) {
     return { feasible: false, reason: "over-budget", cheapestPossibleCents: total };
@@ -49,12 +54,12 @@ export function selectWithinBudget(
     let bestProduct: Product | null = null;
     let bestGain = 0;
 
-    for (const category of PRODUCT_CATEGORIES) {
+    for (const category of activeCategories) {
       if (pinned[category]) continue; // a pinned category is never swapped
 
-      const currentPrice = items[category].priceCents;
+      const currentPrice = items[category]!.priceCents;
       for (const candidate of eligibleByCategory[category]) {
-        if (candidate.id === items[category].id) continue;
+        if (candidate.id === items[category]!.id) continue;
         const candidateTotal = total - currentPrice + candidate.priceCents;
         const gain = candidate.priceCents - currentPrice;
         if (candidateTotal <= budgetCents && gain > bestGain) {
@@ -66,7 +71,7 @@ export function selectWithinBudget(
     }
 
     if (bestCategory && bestProduct) {
-      total = total - items[bestCategory].priceCents + bestProduct.priceCents;
+      total = total - items[bestCategory]!.priceCents + bestProduct.priceCents;
       items[bestCategory] = bestProduct;
       upgraded = true;
     }

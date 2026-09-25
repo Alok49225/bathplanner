@@ -56,7 +56,7 @@ function App() {
       <h1 className="app-title">Bath Planner</h1>
       <div className="app-columns">
         <div className="app-main">
-          <DimensionForm value={session.room} onChange={(room) => patchSession({ room })} />
+          <DimensionForm value={session.room} onChange={(room) => patchSession({ room })} catalog={catalog} />
           <BudgetSlider valueCents={session.budgetCents} onChange={(budgetCents) => patchSession({ budgetCents })} />
           <ThemeSelector value={session.theme} onChange={(theme) => patchSession({ theme })} />
 

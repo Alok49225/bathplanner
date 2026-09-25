@@ -29,8 +29,11 @@ function clamp01(n: number): number {
   return Math.max(0, Math.min(1, n));
 }
 
-function scoreAestheticMatch(items: Record<ProductCategory, Product>, targetTheme: Theme): number {
-  const scores = PRODUCT_CATEGORIES.map((c) => items[c].themeScores[targetTheme]);
+function scoreAestheticMatch(items: Partial<Record<ProductCategory, Product>>, targetTheme: Theme): number {
+  const scores = PRODUCT_CATEGORIES.map((c) => items[c]?.themeScores[targetTheme]).filter(
+    (s): s is number => s !== undefined
+  );
+  if (scores.length === 0) return 1; // nothing present to score against
   return scores.reduce((sum, s) => sum + s, 0) / scores.length;
 }
 
@@ -53,10 +56,11 @@ export function scoreWaterEfficiencyForProduct(
   return clamp01((worst - actual) / (worst - best));
 }
 
-function scoreWaterEfficiency(items: Record<ProductCategory, Product>): number {
-  const applicable = WATER_USAGE_CATEGORIES.map((category) =>
-    scoreWaterEfficiencyForProduct(category, items[category])
-  ).filter((s): s is number => s !== null);
+function scoreWaterEfficiency(items: Partial<Record<ProductCategory, Product>>): number {
+  const applicable = WATER_USAGE_CATEGORIES.map((category) => {
+    const product = items[category];
+    return product ? scoreWaterEfficiencyForProduct(category, product) : null;
+  }).filter((s): s is number => s !== null);
 
   if (applicable.length === 0) return 1; // nothing to penalize
   return applicable.reduce((sum, s) => sum + s, 0) / applicable.length;
@@ -72,8 +76,8 @@ function scoreBrandCoherence(products: Product[]): number {
   return brands.size <= 1 ? 1 : clamp01(1 - 0.25 * (brands.size - 1));
 }
 
-export function scoreBundle(items: Record<ProductCategory, Product>, targetTheme: Theme): BundleScore {
-  const products = PRODUCT_CATEGORIES.map((c) => items[c]);
+export function scoreBundle(items: Partial<Record<ProductCategory, Product>>, targetTheme: Theme): BundleScore {
+  const products = PRODUCT_CATEGORIES.map((c) => items[c]).filter((p): p is Product => p !== undefined);
 
   const aestheticMatch = scoreAestheticMatch(items, targetTheme);
   const waterEfficiency = scoreWaterEfficiency(items);

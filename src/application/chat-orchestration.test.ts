@@ -155,7 +155,7 @@ describe("useChatSolve", () => {
       const { result } = renderChatSolve({ selectedTier: "balanced" });
       act(() => result.current.sendMessage("keep the toilet"));
       await flushMicrotasks();
-      expect(result.current.pinnedBundle?.items.toilet.productId).toBe("toilet-mid");
+      expect(result.current.pinnedBundle?.items.toilet!.productId).toBe("toilet-mid");
       expect(result.current.messages.at(-1)?.text).toContain("toilet-mid");
     });
 
@@ -190,14 +190,14 @@ describe("useChatSolve", () => {
       const { result } = renderChatSolve(); // toilet-mid (45000) is current
       act(() => result.current.sendMessage("swap the toilet for something cheaper"));
       await flushMicrotasks();
-      expect(result.current.pinnedBundle?.items.toilet.productId).toBe("toilet-cheap");
+      expect(result.current.pinnedBundle?.items.toilet!.productId).toBe("toilet-cheap");
     });
 
     it("swaps to the closest pricier neighbor", async () => {
       const { result } = renderChatSolve();
       act(() => result.current.sendMessage("make the toilet nicer"));
       await flushMicrotasks();
-      expect(result.current.pinnedBundle?.items.toilet.productId).toBe("toilet-premium");
+      expect(result.current.pinnedBundle?.items.toilet!.productId).toBe("toilet-premium");
     });
 
     it("includes the real rationale for why the new pick was chosen, not just its name", async () => {

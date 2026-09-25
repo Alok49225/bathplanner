@@ -75,6 +75,7 @@ export function FixtureLayer({ bundle, catalog, room }: FixtureLayerProps) {
   // of a string, reuses t7's own computation instead of trusting a message.
   const floorPlacements: FloorFixturePlacement[] = FLOOR_CATEGORIES.flatMap((category) => {
     const item = bundle.items[category];
+    if (!item) return []; // omitted category (room too small to fit it)
     const product = resolveProduct(catalog, item.productId);
     const plumbingPoint = room.plumbing.find((p) => p.category === category);
     if (!product || !plumbingPoint) return [];
@@ -99,6 +100,7 @@ export function FixtureLayer({ bundle, catalog, room }: FixtureLayerProps) {
       >
         {FLOOR_CATEGORIES.map((category) => {
           const item = bundle.items[category];
+          if (!item) return null; // omitted category (room too small to fit it)
           const product = resolveProduct(catalog, item.productId);
           const plumbingPoint = room.plumbing.find((p) => p.category === category);
           if (!product || !plumbingPoint) return null; // defensive: this component takes plain data, no guarantee it's internally consistent
@@ -137,6 +139,7 @@ export function FixtureLayer({ bundle, catalog, room }: FixtureLayerProps) {
 
         {MARKER_CATEGORIES.map((category) => {
           const item = bundle.items[category];
+          if (!item) return null; // omitted category (cascades from vanity being omitted)
           const product = resolveProduct(catalog, item.productId);
           if (!product) return null;
 

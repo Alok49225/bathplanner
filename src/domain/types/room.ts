@@ -77,5 +77,18 @@ export interface Room {
   constraints: Constraint[];
 }
 
-/** The subset of Room the dimension form (t14) actually collects — excludes accessibility/constraints, which belong to other intake pieces. */
-export type RoomDimensions = Pick<Room, "widthIn" | "lengthIn" | "ceilingHeightIn" | "doors" | "windows" | "plumbing">;
+/**
+ * The subset of Room the dimension form (t14) actually collects — excludes
+ * accessibility/constraints, which belong to other intake pieces. Also
+ * carries `omittedFixtures`, session-only bookkeeping for the auto-placement
+ * fallback ladder (placement-solver.ts) — which floor categories it
+ * deliberately left out, so intake-orchestration.ts can forward that to
+ * generateTiers's own `omittedCategories` parameter. Not part of `Room`
+ * itself: the engine takes omissions as an explicit function argument,
+ * never reads them off the room. Any manual plumbing edit resets this to
+ * `[]` (see DimensionForm.tsx) — it's stale the moment the user starts
+ * hand-managing points again.
+ */
+export type RoomDimensions = Pick<Room, "widthIn" | "lengthIn" | "ceilingHeightIn" | "doors" | "windows" | "plumbing"> & {
+  omittedFixtures?: PlumbingPoint["category"][];
+};

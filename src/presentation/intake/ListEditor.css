@@ -18,6 +18,11 @@
   color: #181f1d;
 }
 
+.list-editor-header-actions {
+  display: flex;
+  gap: 8px;
+}
+
 .list-editor-header button {
   font-size: 12px;
   border: 1px solid #0f5c66;
@@ -26,6 +31,22 @@
   border-radius: 5px;
   padding: 4px 9px;
   cursor: pointer;
+}
+
+.list-editor-header button:disabled {
+  border-color: #d3dbd6;
+  color: #8a9590;
+  cursor: not-allowed;
+}
+
+.list-editor-error {
+  margin: 0;
+  font-size: 12.5px;
+  color: #6b5220;
+  background: #f3e9d3;
+  border: 1px solid #96702a;
+  border-radius: 6px;
+  padding: 6px 10px;
 }
 
 .list-editor-empty {

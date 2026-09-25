@@ -196,4 +196,26 @@ describe("useIntakeSolve", () => {
     expect(result.current.cheapestPossibleCents).toBeUndefined();
     expect(result.current.issues?.length).toBeGreaterThan(0);
   });
+
+  it("forwards session.room.omittedFixtures to generateTiers, solving a partial bundle instead of missing-plumbing-point", async () => {
+    const repo = new FakeCatalogRepository(CATALOG);
+    const roomWithoutVanity: RoomDimensions = {
+      ...ROOM,
+      plumbing: ROOM.plumbing.filter((p) => p.category !== "vanity"),
+      omittedFixtures: ["vanity"],
+    };
+    const { result } = renderIntakeSolve(baseSession({ room: roomWithoutVanity }), repo);
+    await flushMicrotasks();
+    act(() => {
+      vi.advanceTimersByTime(DEBOUNCE_TEST_MS);
+    });
+    expect(result.current.status).toBe("solved");
+    const [bundle] = result.current.tiers!;
+    expect(bundle.items.vanity).toBeUndefined();
+    // cascade: faucet/lighting have no independent plumbing point of their own
+    expect(bundle.items.faucet).toBeUndefined();
+    expect(bundle.items.lighting).toBeUndefined();
+    expect(bundle.items.toilet).toBeDefined();
+    expect(bundle.items.shower).toBeDefined();
+  });
 });

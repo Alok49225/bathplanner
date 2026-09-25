@@ -85,7 +85,7 @@ function checkInvariants(room: Room, budgetCents: number, theme: Theme) {
     // Invariant 2: no missing category, every pick is a real catalog id.
     expect(Object.keys(bundle.items).sort()).toEqual([...PRODUCT_CATEGORIES].sort());
     PRODUCT_CATEGORIES.forEach((category) => {
-      expect(catalogIds.has(bundle.items[category].productId)).toBe(true);
+      expect(catalogIds.has(bundle.items[category]!.productId)).toBe(true);
     });
 
     // Invariant 3: no clearance violation — a hard fit error must never
@@ -118,7 +118,7 @@ describe("Solver invariants — blueprint's 5'x8' hall bath, full budget x theme
     expect(result.feasible).toBe(true);
     if (!result.feasible) return;
     result.tiers.forEach((bundle) => {
-      expect(tooWideForHallBath.some((p) => p.id === bundle.items.vanity.productId)).toBe(false);
+      expect(tooWideForHallBath.some((p) => p.id === bundle.items.vanity!.productId)).toBe(false);
     });
   });
 });

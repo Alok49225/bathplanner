@@ -29,6 +29,26 @@ function resolveProduct(catalog: Product[], productId: string): Product | undefi
   return catalog.find((p) => p.id === productId);
 }
 
+/**
+ * Which categories can go missing, and why, is fully determined by the
+ * fixed fallback ladder (placement-solver.ts): vanity drops first, then
+ * shower — toilet is never omitted, since the ladder fails outright rather
+ * than building a bundle without one. Faucet/lighting have no independent
+ * plumbing point, so they're only ever missing as vanity's cascade.
+ */
+function omissionReason(category: ProductCategory): string {
+  switch (category) {
+    case "vanity":
+    case "shower":
+      return `${CATEGORY_LABELS[category]} not included — the room wasn't big enough to fit one after prioritizing the other fixtures.`;
+    case "faucet":
+    case "lighting":
+      return `${CATEGORY_LABELS[category]} not included — it mounts to the vanity, and there's no vanity in this room's layout.`;
+    case "toilet":
+      return `${CATEGORY_LABELS[category]} not included.`;
+  }
+}
+
 export function BundleSummary({ bundle, catalog }: BundleSummaryProps) {
   const remainingCents = bundle.budgetCents - bundle.totalPriceCents;
 
@@ -37,6 +57,14 @@ export function BundleSummary({ bundle, catalog }: BundleSummaryProps) {
       <ul className="bundle-summary-items">
         {PRODUCT_CATEGORIES.map((category) => {
           const item = bundle.items[category];
+          if (!item) {
+            return (
+              <li key={category} className="bundle-summary-item bundle-summary-item-omitted">
+                <span className="bundle-summary-item-category">{CATEGORY_LABELS[category]}</span>
+                <p className="bundle-summary-item-omitted-reason">{omissionReason(category)}</p>
+              </li>
+            );
+          }
           const product = resolveProduct(catalog, item.productId);
 
           return (

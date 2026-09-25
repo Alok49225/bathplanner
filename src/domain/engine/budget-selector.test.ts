@@ -35,8 +35,8 @@ describe("selectWithinBudget", () => {
     expect(result.feasible).toBe(true);
     if (!result.feasible) throw new Error("expected feasible");
     expect(result.totalPriceCents).toBe(BASELINE);
-    expect(result.items.toilet.id).toBe("toilet-cheap");
-    expect(result.items.shower.id).toBe("shower-cheap");
+    expect(result.items.toilet!.id).toBe("toilet-cheap");
+    expect(result.items.shower!.id).toBe("shower-cheap");
   });
 
   it("reports infeasible with the true cheapest-possible total when budget is below baseline", () => {
@@ -54,11 +54,11 @@ describe("selectWithinBudget", () => {
     const result = selectWithinBudget(CATALOG, budget);
     expect(result.feasible).toBe(true);
     if (!result.feasible) throw new Error("expected feasible");
-    expect(result.items.toilet.id).toBe("toilet-exp");
-    expect(result.items.lighting.id).toBe("lighting-exp");
-    expect(result.items.faucet.id).toBe("faucet-exp");
-    expect(result.items.vanity.id).toBe("vanity-cheap");
-    expect(result.items.shower.id).toBe("shower-cheap");
+    expect(result.items.toilet!.id).toBe("toilet-exp");
+    expect(result.items.lighting!.id).toBe("lighting-exp");
+    expect(result.items.faucet!.id).toBe("faucet-exp");
+    expect(result.items.vanity!.id).toBe("vanity-cheap");
+    expect(result.items.shower!.id).toBe("shower-cheap");
     expect(result.totalPriceCents).toBe(285000);
     expect(result.totalPriceCents).toBeLessThanOrEqual(budget);
   });
@@ -68,8 +68,8 @@ describe("selectWithinBudget", () => {
     const result = selectWithinBudget(CATALOG, budget);
     expect(result.feasible).toBe(true);
     if (!result.feasible) throw new Error("expected feasible");
-    expect(result.items.shower.id).toBe("shower-exp");
-    expect(result.items.vanity.id).toBe("vanity-cheap");
+    expect(result.items.shower!.id).toBe("shower-exp");
+    expect(result.items.vanity!.id).toBe("vanity-cheap");
     expect(result.totalPriceCents).toBe(BASELINE + 70000);
   });
 
@@ -78,11 +78,11 @@ describe("selectWithinBudget", () => {
     const result = selectWithinBudget(CATALOG, budget);
     expect(result.feasible).toBe(true);
     if (!result.feasible) throw new Error("expected feasible");
-    expect(result.items.toilet.id).toBe("toilet-exp");
-    expect(result.items.vanity.id).toBe("vanity-exp");
-    expect(result.items.faucet.id).toBe("faucet-exp");
-    expect(result.items.shower.id).toBe("shower-exp");
-    expect(result.items.lighting.id).toBe("lighting-exp");
+    expect(result.items.toilet!.id).toBe("toilet-exp");
+    expect(result.items.vanity!.id).toBe("vanity-exp");
+    expect(result.items.faucet!.id).toBe("faucet-exp");
+    expect(result.items.shower!.id).toBe("shower-exp");
+    expect(result.items.lighting!.id).toBe("lighting-exp");
   });
 
   it("never returns a total that exceeds the budget", () => {
@@ -107,10 +107,10 @@ describe("selectWithinBudget", () => {
     it("forces the pinned product in even though it's not the cheapest", () => {
       const toiletExp = CATALOG.toilet[1]; // toilet-exp, 45000
       const budget = BASELINE + 15000; // exactly the pin's extra cost over toilet-cheap
-      const result = selectWithinBudget(CATALOG, budget, { toilet: toiletExp });
+      const result = selectWithinBudget(CATALOG, budget, { toilet: toiletExp! });
       expect(result.feasible).toBe(true);
       if (!result.feasible) throw new Error("expected feasible");
-      expect(result.items.toilet.id).toBe("toilet-exp");
+      expect(result.items.toilet!.id).toBe("toilet-exp");
       expect(result.totalPriceCents).toBe(BASELINE + 15000);
     });
 
@@ -120,9 +120,9 @@ describe("selectWithinBudget", () => {
       const result = selectWithinBudget(CATALOG, budget, { toilet: toiletCheap });
       expect(result.feasible).toBe(true);
       if (!result.feasible) throw new Error("expected feasible");
-      expect(result.items.toilet.id).toBe("toilet-cheap"); // stays pinned, not upgraded
-      expect(result.items.vanity.id).toBe("vanity-exp"); // everything else still upgrades fully
-      expect(result.items.shower.id).toBe("shower-exp");
+      expect(result.items.toilet!.id).toBe("toilet-cheap"); // stays pinned, not upgraded
+      expect(result.items.vanity!.id).toBe("vanity-exp"); // everything else still upgrades fully
+      expect(result.items.shower!.id).toBe("shower-exp");
     });
 
     it("doesn't require the pinned category to have any eligible options of its own", () => {
@@ -131,7 +131,7 @@ describe("selectWithinBudget", () => {
       const result = selectWithinBudget(broken, BASELINE + 10000, { toilet: pinnedProduct });
       expect(result.feasible).toBe(true);
       if (!result.feasible) throw new Error("expected feasible");
-      expect(result.items.toilet.id).toBe("one-off-toilet");
+      expect(result.items.toilet!.id).toBe("one-off-toilet");
     });
 
     it("reports the pin's own cost in cheapestPossibleCents when even the pinned baseline is unaffordable", () => {

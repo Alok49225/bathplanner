@@ -42,8 +42,10 @@ const INSTALL_COMPLEXITY_RANK: Record<InstallComplexity, number> = {
  */
 export function filterEligibleProducts(
   catalog: Product[],
-  room: Room
+  room: Room,
+  omittedCategories: ProductCategory[] = []
 ): { eligible: Record<ProductCategory, Product[]>; errors: CompatibilityIssue[] } {
+  const isOmitted = (category: ProductCategory) => omittedCategories.includes(category);
   const constraints = room.constraints;
   const avoidTags = constraints
     .filter((c) => c.rule.type === "avoid-tag")
@@ -58,6 +60,10 @@ export function filterEligibleProducts(
 
   const eligible = {} as Record<ProductCategory, Product[]>;
   for (const category of PRODUCT_CATEGORIES) {
+    if (isOmitted(category)) {
+      eligible[category] = [];
+      continue;
+    }
     const isFloorFixture = FLOOR_FIXTURE_CATEGORIES.includes(category as FloorFixtureCategory);
     eligible[category] = catalog.filter(
       (p) =>
@@ -70,6 +76,7 @@ export function filterEligibleProducts(
 
   const errors: CompatibilityIssue[] = [];
   for (const category of PRODUCT_CATEGORIES) {
+    if (isOmitted(category)) continue;
     if (eligible[category].length === 0) {
       errors.push({
         severity: "error",

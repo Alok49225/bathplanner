@@ -1,15 +1,28 @@
 import { useState } from "react";
 import type { RoomDimensions, PlumbingPoint, Wall, Point } from "../../domain/types/room";
+import type { Product } from "../../domain/types/product";
+import { getFootprintEnvelope, placeFixturesWithFallback } from "../../domain/engine/placement-solver";
 import { FloorPlan } from "../viz/FloorPlan";
 import "./ListEditor.css";
 import "./PlumbingPointList.css";
+
+export interface AutoPlaceResult {
+  plumbing: PlumbingPoint[];
+  omittedFixtures: PlumbingPoint["category"][];
+}
 
 export interface PlumbingPointListProps {
   value: PlumbingPoint[];
   onChange: (points: PlumbingPoint[]) => void;
   /** Needed to render the click-to-place floor plan — the list itself still only ever reads/writes `value`. */
   room: RoomDimensions;
+  /** Null while the catalog is still loading — the auto-place button stays disabled until it's ready, footprint envelopes need real product dimensions. */
+  catalog: Product[] | null;
+  /** Fires with a fresh proposal (replacing `value` entirely) when auto-placement succeeds — DimensionForm.tsx decides how that combines with `omittedFixtures`. */
+  onAutoPlace: (result: AutoPlaceResult) => void;
 }
+
+const FLOOR_CATEGORIES: PlumbingPoint["category"][] = ["toilet", "vanity", "shower"];
 
 const WALLS: Wall[] = ["north", "south", "east", "west"];
 const CATEGORIES: PlumbingPoint["category"][] = ["toilet", "vanity", "shower"];
@@ -54,9 +67,39 @@ function nearestWall(position: Point, room: RoomDimensions): Wall {
   );
 }
 
-export function PlumbingPointList({ value, onChange, room }: PlumbingPointListProps) {
+export function PlumbingPointList({ value, onChange, room, catalog, onAutoPlace }: PlumbingPointListProps) {
   const [selectedCategory, setSelectedCategory] = useState<PlumbingPoint["category"] | null>(null);
+  const [isPlacing, setIsPlacing] = useState(false);
+  const [placementError, setPlacementError] = useState<string | null>(null);
   const [nextCategory] = unusedCategories(value);
+
+  function handleAutoPlace() {
+    if (!catalog) return;
+    setIsPlacing(true);
+    setPlacementError(null);
+    try {
+      const fullRoom = { ...room, accessibility: {}, constraints: [] };
+      const footprints = Object.fromEntries(
+        FLOOR_CATEGORIES.map((category) => [category, getFootprintEnvelope(catalog, category)])
+      ) as Record<PlumbingPoint["category"], ReturnType<typeof getFootprintEnvelope>>;
+      const result = placeFixturesWithFallback(fullRoom, footprints);
+      if (!result.feasible) {
+        setPlacementError("Auto-place couldn't fit even a toilet in this room — try increasing the room dimensions.");
+        return;
+      }
+      const plumbing: PlumbingPoint[] = result.placements.map((placement) => ({
+        id: `plumbing-${crypto.randomUUID()}`,
+        category: placement.category,
+        position: placement.position,
+        wall: placement.wall,
+      }));
+      onAutoPlace({ plumbing, omittedFixtures: result.omitted });
+    } catch {
+      setPlacementError("Auto-place couldn't fit even a toilet in this room — try increasing the room dimensions.");
+    } finally {
+      setIsPlacing(false);
+    }
+  }
 
   function updatePoint(id: string, patch: Partial<PlumbingPoint>) {
     onChange(value.map((p) => (p.id === id ? { ...p, ...patch } : p)));
@@ -85,15 +128,26 @@ export function PlumbingPointList({ value, onChange, room }: PlumbingPointListPr
     <div className="list-editor">
       <div className="list-editor-header">
         <h4>Plumbing rough-ins</h4>
-        <button
-          type="button"
-          disabled={!nextCategory}
-          title={nextCategory ? undefined : "Toilet, vanity, and shower are all already added."}
-          onClick={() => nextCategory && onChange([...value, newPoint(nextCategory)])}
-        >
-          Add plumbing point
-        </button>
+        <div className="list-editor-header-actions">
+          <button
+            type="button"
+            disabled={!catalog || isPlacing}
+            title={catalog ? undefined : "Loading the catalog…"}
+            onClick={handleAutoPlace}
+          >
+            {isPlacing ? "Placing…" : "Auto-place fixtures"}
+          </button>
+          <button
+            type="button"
+            disabled={!nextCategory}
+            title={nextCategory ? undefined : "Toilet, vanity, and shower are all already added."}
+            onClick={() => nextCategory && onChange([...value, newPoint(nextCategory)])}
+          >
+            Add plumbing point
+          </button>
+        </div>
       </div>
+      {placementError && <p className="list-editor-error">{placementError}</p>}
 
       <div className="plumbing-placer">
         <div className="plumbing-placer-categories" role="radiogroup" aria-label="Category to place">

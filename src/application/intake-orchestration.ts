@@ -84,7 +84,7 @@ export function useIntakeSolve(session: SessionState, repository: CatalogReposit
 
     const timer = setTimeout(() => {
       const room = toRoom(session);
-      const solveResult = generateTiers(catalog, room, session.budgetCents, theme);
+      const solveResult = generateTiers(catalog, room, session.budgetCents, theme, session.room.omittedFixtures ?? []);
       if (solveResult.feasible) {
         setResult({ status: "solved", tiers: solveResult.tiers });
       } else if (solveResult.reason === "over-budget") {

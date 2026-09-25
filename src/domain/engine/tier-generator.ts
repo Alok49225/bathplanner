@@ -34,10 +34,20 @@ const TIER_FRACTIONS: Record<BundleTier, number> = {
 
 export const FLOOR_CATEGORIES: FloorFixtureCategory[] = ["toilet", "vanity", "shower"];
 
-/** Resolves each floor-fixture category's plumbing point once; null if the room is missing one entirely. */
-export function resolvePlumbingPoints(room: Room): Record<FloorFixtureCategory, PlumbingPoint> | null {
-  const byCategory = {} as Record<FloorFixtureCategory, PlumbingPoint>;
+/**
+ * Resolves each floor-fixture category's plumbing point once; null if a
+ * category the room actually needs (i.e. not in `omittedCategories`) is
+ * missing its point entirely. An omitted category is deliberately left
+ * absent from the returned record rather than erroring — that's the whole
+ * point of the placement solver's fallback ladder being allowed to drop one.
+ */
+export function resolvePlumbingPoints(
+  room: Room,
+  omittedCategories: FloorFixtureCategory[] = []
+): Partial<Record<FloorFixtureCategory, PlumbingPoint>> | null {
+  const byCategory: Partial<Record<FloorFixtureCategory, PlumbingPoint>> = {};
   for (const category of FLOOR_CATEGORIES) {
+    if (omittedCategories.includes(category)) continue;
     const point = room.plumbing.find((p) => p.category === category);
     if (!point) return null;
     byCategory[category] = point;
@@ -47,40 +57,60 @@ export function resolvePlumbingPoints(room: Room): Record<FloorFixtureCategory, 
 
 export function buildBundle(
   tier: BundleTier,
-  selectionItems: Record<ProductCategory, Product>,
+  selectionItems: Partial<Record<ProductCategory, Product>>,
   totalPriceCents: number,
   budgetCents: number,
   room: Room,
   targetTheme: Theme,
-  plumbingPointByCategory: Record<FloorFixtureCategory, PlumbingPoint>,
+  plumbingPointByCategory: Partial<Record<FloorFixtureCategory, PlumbingPoint>>,
   eligible: Record<ProductCategory, Product[]>
 ): Bundle {
   const score = scoreBundle(selectionItems, targetTheme);
 
-  const placements: FloorFixturePlacement[] = FLOOR_CATEGORIES.map((category) => ({
+  // Faucet and lighting have no independent plumbing point of their own —
+  // they inherit the vanity's. No vanity point means nothing to inherit, so
+  // they cascade out of the bundle along with it, not just floor categories.
+  const vanityPresent = plumbingPointByCategory.vanity !== undefined;
+
+  const placements: FloorFixturePlacement[] = FLOOR_CATEGORIES.filter(
+    (category) => plumbingPointByCategory[category] !== undefined && selectionItems[category] !== undefined
+  ).map((category) => ({
     category,
-    product: selectionItems[category],
-    plumbingPointId: plumbingPointByCategory[category].id,
+    product: selectionItems[category]!,
+    plumbingPointId: plumbingPointByCategory[category]!.id,
   }));
   const fitIssues = validateFit(placements, room);
-  const compatIssues = checkFinishCoordination(PRODUCT_CATEGORIES.map((c) => selectionItems[c]));
+
+  const presentProducts = PRODUCT_CATEGORIES.map((c) => selectionItems[c]).filter(
+    (p): p is Product => p !== undefined
+  );
+  const compatIssues = checkFinishCoordination(presentProducts);
 
   const warnings = [
     ...fitIssues.map((i) => (i.severity === "error" ? `[fit error] ${i.message}` : i.message)),
     ...compatIssues.map((i) => i.message),
   ];
 
-  const items = {} as Record<ProductCategory, BundleLineItem>;
+  const items: Partial<Record<ProductCategory, BundleLineItem>> = {};
   for (const category of PRODUCT_CATEGORIES) {
     const isFloor = FLOOR_CATEGORIES.includes(category as FloorFixtureCategory);
+    if (isFloor) {
+      if (plumbingPointByCategory[category as FloorFixtureCategory] === undefined) continue; // this floor category was omitted
+    } else if (!vanityPresent) {
+      continue; // cascade: faucet/lighting have nothing to mount to without a vanity
+    }
+    const product = selectionItems[category];
+    if (!product) continue; // defensive — should already be guaranteed by the checks above
+
     const position = isFloor
-      ? plumbingPointByCategory[category as FloorFixtureCategory].position
-      : plumbingPointByCategory.vanity.position;
+      ? plumbingPointByCategory[category as FloorFixtureCategory]!.position
+      : plumbingPointByCategory.vanity!.position;
+
     items[category] = {
       category,
-      productId: selectionItems[category].id,
+      productId: product.id,
       placement: { position },
-      rationale: generateRationale(selectionItems[category], category, targetTheme, eligible[category]),
+      rationale: generateRationale(product, category, targetTheme, eligible[category]),
     };
   }
 
@@ -95,11 +125,24 @@ export function buildBundle(
   };
 }
 
+/**
+ * Widens a floor-category omission list to the full set of product
+ * categories that need to sit out of eligibility/selection — vanity being
+ * omitted also cascades to faucet and lighting, which have no independent
+ * plumbing point of their own to inherit from otherwise.
+ */
+function cascadeOmissions(floorOmissions: FloorFixtureCategory[]): ProductCategory[] {
+  const cascaded: ProductCategory[] = [...floorOmissions];
+  if (floorOmissions.includes("vanity")) cascaded.push("faucet", "lighting");
+  return cascaded;
+}
+
 export function generateTiers(
   catalog: Product[],
   room: Room,
   budgetCents: number,
-  targetTheme: Theme
+  targetTheme: Theme,
+  omittedCategories: FloorFixtureCategory[] = []
 ): TierGenerationResult {
   // Checked before filterEligibleProducts deliberately: canFit (called inside
   // it) needs a plumbing point to test a footprint against, so a floor
@@ -107,16 +150,20 @@ export function generateTiers(
   // marked yet" (the common case mid-intake-form) and "no product fits"
   // are different problems with different fixes, and only checking
   // plumbing points first surfaces the right one instead of the engine's
-  // fit-driven message papering over the real cause.
-  const plumbingPointByCategory = resolvePlumbingPoints(room);
+  // fit-driven message papering over the real cause. A category in
+  // `omittedCategories` is neither of those — it's the placement solver's
+  // own fallback ladder having deliberately decided not to place it, so it's
+  // left out of this check entirely rather than tripping either failure.
+  const plumbingPointByCategory = resolvePlumbingPoints(room, omittedCategories);
   if (!plumbingPointByCategory) return { feasible: false, reason: "missing-plumbing-point" };
 
-  const { eligible, errors } = filterEligibleProducts(catalog, room);
+  const cascadedOmissions = cascadeOmissions(omittedCategories);
+  const { eligible, errors } = filterEligibleProducts(catalog, room, cascadedOmissions);
   if (errors.length > 0) {
     return { feasible: false, reason: "no-eligible-options", issues: errors };
   }
 
-  const premiumSelection = selectWithinBudget(eligible, budgetCents);
+  const premiumSelection = selectWithinBudget(eligible, budgetCents, {}, cascadedOmissions);
   if (!premiumSelection.feasible) {
     // errors.length === 0 above already guarantees every category has at
     // least one eligible option, so the only way selectWithinBudget can
@@ -131,7 +178,7 @@ export function generateTiers(
     const { items: selectionItems, totalPriceCents } =
       tier === "premium"
         ? { items: premiumSelection.items, totalPriceCents: premiumSelection.totalPriceCents }
-        : resolveTierSelection(eligible, budgetCents, TIER_FRACTIONS[tier]);
+        : resolveTierSelection(eligible, budgetCents, TIER_FRACTIONS[tier], cascadedOmissions);
 
     return buildBundle(
       tier,
@@ -152,19 +199,21 @@ export function generateTiers(
 function resolveTierSelection(
   eligible: Record<ProductCategory, Product[]>,
   budgetCents: number,
-  fraction: number
-): { items: Record<ProductCategory, Product>; totalPriceCents: number } {
+  fraction: number,
+  omittedCategories: ProductCategory[] = []
+): { items: Partial<Record<ProductCategory, Product>>; totalPriceCents: number } {
   const cap = Math.round(budgetCents * fraction);
-  const result = selectWithinBudget(eligible, cap);
+  const result = selectWithinBudget(eligible, cap, {}, omittedCategories);
   if (result.feasible) return result;
 
-  // Every category is already known to have eligible options by the time a
-  // caller reaches this fallback (generateTiers checked that before ever
-  // calling resolveTierSelection), so a fractional cap can only fail over-budget.
+  // Every non-omitted category is already known to have eligible options by
+  // the time a caller reaches this fallback (generateTiers checked that
+  // before ever calling resolveTierSelection), so a fractional cap can only
+  // fail over-budget.
   if (result.reason !== "over-budget") {
-    throw new Error("unreachable: caller already guaranteed every category has eligible options");
+    throw new Error("unreachable: caller already guaranteed every active category has eligible options");
   }
-  const fallback = selectWithinBudget(eligible, result.cheapestPossibleCents);
+  const fallback = selectWithinBudget(eligible, result.cheapestPossibleCents, {}, omittedCategories);
   if (!fallback.feasible) {
     throw new Error("unreachable: cheapestPossibleCents must itself be feasible");
   }

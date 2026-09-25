@@ -106,6 +106,63 @@ describe("BundleSummary", () => {
     expect(screen.getByText("missing-id")).toBeInTheDocument();
   });
 
+  describe("omitted categories", () => {
+    function makeOmittingBundle(omitted: ProductCategory[]): Bundle {
+      const items: Partial<Record<ProductCategory, BundleLineItem>> = {};
+      (["toilet", "vanity", "faucet", "shower", "lighting"] as ProductCategory[])
+        .filter((c) => !omitted.includes(c))
+        .forEach((c) => {
+          items[c] = makeItem(`${c}-1`, c, `Rationale for ${c}.`);
+        });
+      return {
+        id: "bundle-1",
+        tier: "balanced",
+        items,
+        totalPriceCents: 150000,
+        budgetCents: 300000,
+        warnings: [],
+      };
+    }
+
+    it("explains a dropped vanity (and its faucet/lighting cascade) instead of just omitting the rows", () => {
+      const bundle = makeOmittingBundle(["vanity", "faucet", "lighting"]);
+      render(<BundleSummary bundle={bundle} catalog={CATALOG} />);
+      expect(
+        screen.getByText("Vanity not included — the room wasn't big enough to fit one after prioritizing the other fixtures.")
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText("Faucet not included — it mounts to the vanity, and there's no vanity in this room's layout.")
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText("Lighting not included — it mounts to the vanity, and there's no vanity in this room's layout.")
+      ).toBeInTheDocument();
+    });
+
+    it("explains a dropped shower on top of a dropped vanity", () => {
+      const bundle = makeOmittingBundle(["vanity", "shower", "faucet", "lighting"]);
+      render(<BundleSummary bundle={bundle} catalog={CATALOG} />);
+      expect(
+        screen.getByText("Shower not included — the room wasn't big enough to fit one after prioritizing the other fixtures.")
+      ).toBeInTheDocument();
+    });
+
+    it("shows no price or rationale for an omitted row", () => {
+      const bundle = makeOmittingBundle(["vanity", "faucet", "lighting"]);
+      const { container } = render(<BundleSummary bundle={bundle} catalog={CATALOG} />);
+      const omittedRow = container.querySelector(".bundle-summary-item-omitted");
+      expect(omittedRow).not.toBeNull();
+      expect(omittedRow?.querySelector(".bundle-summary-item-price")).toBeNull();
+      expect(omittedRow?.querySelector(".bundle-summary-item-rationale")).toBeNull();
+    });
+
+    it("still renders every present category normally alongside the omitted ones", () => {
+      const bundle = makeOmittingBundle(["vanity", "faucet", "lighting"]);
+      render(<BundleSummary bundle={bundle} catalog={CATALOG} />);
+      expect(screen.getByText(/Cimarron · Kohler, white/)).toBeInTheDocument();
+      expect(screen.getByText("Rationale for toilet.")).toBeInTheDocument();
+    });
+  });
+
   describe("water efficiency", () => {
     it("shows the sustainability score as a rounded percentage", () => {
       render(<BundleSummary bundle={makeBundle({ sustainabilityScore: 0.824 })} catalog={CATALOG} />);

@@ -27,11 +27,16 @@ export interface Bundle {
   id: string;
   tier: BundleTier;
   /**
-   * Exactly one line item per required category — a Record rather than an
-   * array so a missing or mistyped category is a compile error, not a
-   * runtime check every consumer has to remember to run.
+   * One line item per category the room could actually accommodate. Usually
+   * every ProductCategory is present — a Record rather than an array so a
+   * missing or mistyped category is a compile error, not a runtime check
+   * every consumer has to remember to run. But a category can be legitimately
+   * absent when the room is too small to fit it (see placement-solver.ts's
+   * fallback ladder and the `omittedCategories` parameter threaded through
+   * the solver) — Partial so that omission is still type-checked by key,
+   * never a silent lookup miss a consumer forgets to guard against.
    */
-  items: Record<ProductCategory, BundleLineItem>;
+  items: Partial<Record<ProductCategory, BundleLineItem>>;
   /** Sum of the picked products' priceCents — a solver output, not user input. */
   totalPriceCents: number;
   /** The budget ceiling this bundle was solved against. */

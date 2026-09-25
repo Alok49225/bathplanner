@@ -65,7 +65,7 @@ describe("pinAndResolve", () => {
     const result = pinAndResolve(CATALOG, ROOM, budget, "minimalist-modern", "balanced", "toilet", "toilet-exp");
     expect(result.feasible).toBe(true);
     if (!result.feasible) throw new Error("expected feasible");
-    expect(result.bundle.items.toilet.productId).toBe("toilet-exp");
+    expect(result.bundle.items.toilet!.productId).toBe("toilet-exp");
     expect(result.bundle.totalPriceCents).toBeLessThanOrEqual(budget);
     expect(result.bundle.budgetCents).toBe(budget); // ceiling stays the original budget, not a shrunk one
   });
@@ -75,8 +75,8 @@ describe("pinAndResolve", () => {
     expect(result.feasible).toBe(true);
     if (!result.feasible) throw new Error("expected feasible");
     expect(result.bundle.tier).toBe("value");
-    expect(result.bundle.items.vanity.rationale).toBeTruthy();
-    expect(result.bundle.items.toilet.placement.position).toBeDefined();
+    expect(result.bundle.items.vanity!.rationale).toBeTruthy();
+    expect(result.bundle.items.toilet!.placement.position).toBeDefined();
     expect(Object.keys(result.bundle.items).sort()).toEqual(
       ["faucet", "lighting", "shower", "toilet", "vanity"].sort()
     );
@@ -117,9 +117,9 @@ describe("pinAndResolve", () => {
     const result = pinAndResolve(CATALOG, ROOM, bigBudget, "minimalist-modern", "premium", "toilet", "toilet-cheap");
     expect(result.feasible).toBe(true);
     if (!result.feasible) throw new Error("expected feasible");
-    expect(result.bundle.items.toilet.productId).toBe("toilet-cheap");
+    expect(result.bundle.items.toilet!.productId).toBe("toilet-cheap");
     // everything else should still be free to upgrade at this budget
-    expect(result.bundle.items.shower.productId).toBe("shower-exp");
-    expect(result.bundle.items.vanity.productId).toBe("vanity-exp");
+    expect(result.bundle.items.shower!.productId).toBe("shower-exp");
+    expect(result.bundle.items.vanity!.productId).toBe("vanity-exp");
   });
 });

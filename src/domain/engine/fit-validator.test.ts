@@ -149,6 +149,30 @@ describe("validateFit", () => {
     });
   });
 
+  it("warns when a fixture's footprint reaches a window's span on the same wall", () => {
+    const room = makeRoom({
+      windows: [{ id: "w1", wall: "north", offset: 10, widthIn: 20, sillHeightIn: 36 }], // spans x:[10,30)
+      plumbing: [{ id: "toilet-rough-in", category: "toilet", position: { x: 15, y: 0 }, wall: "north" }],
+    });
+    const placements: FloorFixturePlacement[] = [
+      { category: "toilet", product: makeProduct(), plumbingPointId: "toilet-rough-in" },
+    ];
+    const issues = validateFit(placements, room);
+    expect(issues).toContainEqual(expect.objectContaining({ severity: "warning", code: "overlaps-window" }));
+  });
+
+  it("doesn't warn about a window nowhere near the fixture", () => {
+    const room = makeRoom({
+      windows: [{ id: "w1", wall: "north", offset: 45, widthIn: 10, sillHeightIn: 36 }],
+      plumbing: [{ id: "toilet-rough-in", category: "toilet", position: { x: 5, y: 0 }, wall: "north" }],
+    });
+    const placements: FloorFixturePlacement[] = [
+      { category: "toilet", product: makeProduct(), plumbingPointId: "toilet-rough-in" },
+    ];
+    const issues = validateFit(placements, room);
+    expect(issues.some((i) => i.code === "overlaps-window")).toBe(false);
+  });
+
   it("only ever reports the three floor-fixture categories", () => {
     const room = makeRoom();
     const placements: FloorFixturePlacement[] = [
@@ -218,6 +242,20 @@ describe("validateFit", () => {
       const [issue] = validateFit(placements, room);
       expect(issue.message).toBe("toilet has less than the recommended 21in front clearance.");
       expect(issue.message).not.toContain("plumbing-should-not-appear");
+    });
+
+    it("doesn't include the plumbing point id in the overlaps-window message", () => {
+      const room = makeRoom({
+        windows: [{ id: "w1", wall: "north", offset: 10, widthIn: 20, sillHeightIn: 36 }],
+        plumbing: [{ id: "plumbing-should-not-appear", category: "toilet", position: { x: 15, y: 0 }, wall: "north" }],
+      });
+      const placements: FloorFixturePlacement[] = [
+        { category: "toilet", product: makeProduct(), plumbingPointId: "plumbing-should-not-appear" },
+      ];
+      const issues = validateFit(placements, room);
+      const windowIssue = issues.find((i) => i.code === "overlaps-window")!;
+      expect(windowIssue.message).toBe("toilet is placed right at a window.");
+      expect(windowIssue.message).not.toContain("plumbing-should-not-appear");
     });
   });
 });
