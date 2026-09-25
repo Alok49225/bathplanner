@@ -231,6 +231,44 @@ describe("useChatSolve", () => {
     });
   });
 
+  describe("selectProduct", () => {
+    it("pins the exact product it's given, without going through parseIntent at all", async () => {
+      const { result } = renderChatSolve({ selectedTier: "balanced" });
+      await act(async () => {
+        await result.current.selectProduct("toilet", "toilet-premium");
+      });
+      expect(result.current.pinnedBundle?.items.toilet!.productId).toBe("toilet-premium");
+    });
+
+    it("posts the same confirmation message the chat pin path posts, so there's one consistent log regardless of trigger", async () => {
+      const { result } = renderChatSolve({ selectedTier: "balanced" });
+      await act(async () => {
+        await result.current.selectProduct("toilet", "toilet-premium");
+      });
+      expect(result.current.messages.at(-1)?.text).toBe(
+        "Locked in toilet-premium for the toilet — it'll stay in your balanced bundle."
+      );
+    });
+
+    it("surfaces the same graceful error (not a throw) when the theme isn't a preset", async () => {
+      const { result } = renderChatSolve({ session: baseSession({ theme: { kind: "custom", text: "coastal" } }) });
+      await act(async () => {
+        await result.current.selectProduct("toilet", "toilet-premium");
+      });
+      expect(result.current.pinnedBundle).toBeNull();
+      expect(result.current.messages.at(-1)?.text).toMatch(/preset style/i);
+    });
+
+    it("surfaces the same graceful error when the chosen product doesn't exist in the catalog", async () => {
+      const { result } = renderChatSolve();
+      await act(async () => {
+        await result.current.selectProduct("toilet", "no-such-product");
+      });
+      expect(result.current.pinnedBundle).toBeNull();
+      expect(result.current.messages.at(-1)?.text).toMatch(/went wrong/i);
+    });
+  });
+
   describe("unrecognized", () => {
     it("gives a fallback reply and makes no engine call or session patch", async () => {
       const { result, patchSession } = renderChatSolve();

@@ -11,8 +11,11 @@ import { describe, it, expect } from "vitest";
 import catalogData from "./generated/catalog.json";
 import type { Product, Theme } from "../../domain/types/product";
 import { PRODUCT_CATEGORIES, THEMES } from "../../domain/types/product";
-import type { Room } from "../../domain/types/room";
+import type { PlumbingPoint, Room } from "../../domain/types/room";
 import { generateTiers } from "../../domain/engine/tier-generator";
+import { getFootprintEnvelope, placeFixturesWithFallback } from "../../domain/engine/placement-solver";
+import type { FloorFixtureCategory } from "../../domain/engine/fit-validator";
+import { footprintRect, intersects } from "../../domain/engine/fit-validator";
 
 const catalog = catalogData as Product[];
 const catalogIds = new Set(catalog.map((p) => p.id));
@@ -119,6 +122,124 @@ describe("Solver invariants — blueprint's 5'x8' hall bath, full budget x theme
     if (!result.feasible) return;
     result.tiers.forEach((bundle) => {
       expect(tooWideForHallBath.some((p) => p.id === bundle.items.vanity!.productId)).toBe(false);
+    });
+  });
+});
+
+/**
+ * P10 — the full pipeline together: real footprint envelopes ->
+ * placeFixturesWithFallback's real fallback ladder -> the resulting
+ * (possibly partial) plumbing -> generateTiers's own omittedCategories
+ * threading, swept across budgets and themes. Every test above exercises
+ * generateTiers directly against hand-placed plumbing points that always
+ * cover all three floor categories — none of them ever exercise the
+ * auto-placement engine itself, or a bundle that's missing a category
+ * because the room genuinely couldn't fit it. This closes that gap.
+ *
+ * Deliberately doesn't assert *which* rung of the fallback ladder a given
+ * room lands on — that's exactly the kind of detail this session found
+ * shifting with topK/door/window specifics (see placement-solver.ts's own
+ * TOP_K_ESCALATION comment). What must hold regardless of which rung wins is
+ * self-consistency: whatever generateTiers actually returns must still
+ * satisfy every invariant against the room auto-placement actually produced.
+ */
+function autoPlaceRoom(shell: Room): { room: Room; omitted: FloorFixtureCategory[] } | null {
+  const footprints = {
+    toilet: getFootprintEnvelope(catalog, "toilet"),
+    vanity: getFootprintEnvelope(catalog, "vanity"),
+    shower: getFootprintEnvelope(catalog, "shower"),
+  };
+  const result = placeFixturesWithFallback(shell, footprints);
+  if (!result.feasible) return null;
+
+  const plumbing: PlumbingPoint[] = result.placements.map((p) => ({
+    id: `plumbing-${p.category}`,
+    category: p.category,
+    position: p.position,
+    wall: p.wall,
+  }));
+  return { room: { ...shell, plumbing }, omitted: result.omitted };
+}
+
+function emptyShell(overrides: Partial<Room> = {}): Room {
+  return {
+    widthIn: 60,
+    lengthIn: 96,
+    ceilingHeightIn: 96,
+    doors: [],
+    windows: [],
+    plumbing: [],
+    accessibility: {},
+    constraints: [],
+    ...overrides,
+  };
+}
+
+describe("Solver invariants — full auto-placement pipeline (real footprints, real fallback ladder)", () => {
+  const ROOM_SHELLS: [string, Room][] = [
+    ["generous 10x10, empty", emptyShell({ widthIn: 120, lengthIn: 120 })],
+    ["blueprint's 5x8 hall bath, empty", emptyShell({ widthIn: 60, lengthIn: 96 })],
+    [
+      "5x7.5 with an off-corner door and a wide window (this session's reported bug shape)",
+      emptyShell({
+        widthIn: 60,
+        lengthIn: 90,
+        doors: [{ id: "d1", wall: "south", offset: 20, widthIn: 28, swing: "right" }],
+        windows: [{ id: "w1", wall: "north", offset: 0, widthIn: 40, sillHeightIn: 48 }],
+      }),
+    ],
+    ["very tight 3.5x5, likely forces a fallback drop", emptyShell({ widthIn: 42, lengthIn: 60 })],
+  ];
+
+  ROOM_SHELLS.forEach(([label, shell]) => {
+    it(`auto-placed room (${label}) holds every generateTiers invariant across the full budget x theme sweep`, () => {
+      const placed = autoPlaceRoom(shell);
+      if (!placed) {
+        // Genuinely infeasible even for a toilet alone — nothing further to check.
+        return;
+      }
+      const { room, omitted } = placed;
+
+      // The solver's own hard invariant: no two of its real placements'
+      // envelope footprints physically overlap, checked directly against
+      // its actual output geometry, not just trusted by construction.
+      for (let i = 0; i < room.plumbing.length; i++) {
+        for (let j = i + 1; j < room.plumbing.length; j++) {
+          const a = room.plumbing[i];
+          const b = room.plumbing[j];
+          const envelopeA = getFootprintEnvelope(catalog, a.category);
+          const envelopeB = getFootprintEnvelope(catalog, b.category);
+          const rectA = footprintRect({ dimensions: envelopeA } as Product, a.position, a.wall);
+          const rectB = footprintRect({ dimensions: envelopeB } as Product, b.position, b.wall);
+          expect(intersects(rectA, rectB)).toBe(false);
+        }
+      }
+
+      const cascaded: FloorFixtureCategory[] = [...omitted];
+      if (omitted.includes("vanity")) cascaded.push("faucet" as FloorFixtureCategory, "lighting" as FloorFixtureCategory);
+      const expectedCategories = PRODUCT_CATEGORIES.filter((c) => !cascaded.includes(c as FloorFixtureCategory));
+
+      THEMES.forEach((theme) => {
+        budgetSweep().forEach((budgetCents) => {
+          const result = generateTiers(catalog, room, budgetCents, theme, omitted);
+          if (!result.feasible) {
+            if (result.reason === "over-budget") {
+              expect(result.cheapestPossibleCents).toBeGreaterThan(0);
+            } else if (result.reason === "no-eligible-options") {
+              expect(result.issues.length).toBeGreaterThan(0);
+            }
+            return;
+          }
+          result.tiers.forEach((bundle) => {
+            expect(bundle.totalPriceCents).toBeLessThanOrEqual(budgetCents);
+            expect(Object.keys(bundle.items).sort()).toEqual([...expectedCategories].sort());
+            expectedCategories.forEach((category) => {
+              expect(catalogIds.has(bundle.items[category]!.productId)).toBe(true);
+            });
+            bundle.warnings.forEach((w) => expect(w.startsWith("[fit error]")).toBe(false));
+          });
+        });
+      });
     });
   });
 });

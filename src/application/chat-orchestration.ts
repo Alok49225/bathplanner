@@ -49,6 +49,15 @@ export interface UseChatSolveResult {
   sendMessage: (text: string) => void;
   /** The bundle produced by the most recent pin/swap, if any. See file comment. */
   pinnedBundle: Bundle | null;
+  /**
+   * Same pin machinery "keep the X" drives from chat (applyPin below), just
+   * reachable directly for a structured UI action like a product picker —
+   * no need to round-trip through parseIntent for something that was never
+   * freeform text in the first place. Posts the same confirmation/error
+   * message to the chat log either way, so there's one consistent place to
+   * see what changed regardless of how it was triggered.
+   */
+  selectProduct: (category: ProductCategory, productId: string) => Promise<void>;
 }
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
@@ -263,5 +272,10 @@ export function useChatSolve({
     [session, solve, selectedTier, patchSession, repository, applyPin, reply]
   );
 
-  return { messages, sendMessage, pinnedBundle };
+  const selectProduct = useCallback(
+    (category: ProductCategory, productId: string) => applyPin("pin", category, productId),
+    [applyPin]
+  );
+
+  return { messages, sendMessage, pinnedBundle, selectProduct };
 }

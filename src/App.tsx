@@ -11,9 +11,11 @@ import { TierSwitcher } from './presentation/viz/TierSwitcher'
 import { FloorPlan } from './presentation/viz/FloorPlan'
 import { FixtureLayer } from './presentation/viz/FixtureLayer'
 import { BundleSummary } from './presentation/output/BundleSummary'
+import { ProductPicker } from './presentation/output/ProductPicker'
 import { ChatPanel } from './presentation/chat/ChatPanel'
-import type { Product } from './domain/types/product'
+import type { Product, ProductCategory } from './domain/types/product'
 import type { BundleTier } from './domain/types/bundle'
+import { filterEligibleProducts } from './domain/engine/compatibility-rules'
 import './App.css'
 
 function App() {
@@ -51,6 +53,20 @@ function App() {
   const displayedBundle =
     chat.pinnedBundle && chat.pinnedBundle.tier === selectedTier ? chat.pinnedBundle : autoBundle
 
+  // Which category's product picker is open, if any — set by BundleSummary's
+  // Change button, cleared on close or once a selection is made.
+  const [pickerCategory, setPickerCategory] = useState<ProductCategory | null>(null)
+  // Same inline RoomDimensions -> Room conversion FixtureLayer.tsx and
+  // PlumbingPointList.tsx already use for the same reason (accessibility/
+  // constraints don't affect eligibility here either) — only computed while
+  // a picker is actually open, not on every render.
+  const pickerEligible =
+    pickerCategory && catalog
+      ? filterEligibleProducts(catalog, { ...session.room, accessibility: {}, constraints: [] }).eligible[
+          pickerCategory
+        ]
+      : null
+
   return (
     <div className="app-shell">
       <h1 className="app-title">Bath Planner</h1>
@@ -69,7 +85,7 @@ function App() {
                 <FloorPlan room={session.room} showLegend={false} />
                 <FixtureLayer bundle={displayedBundle} catalog={catalog} room={session.room} />
               </div>
-              <BundleSummary bundle={displayedBundle} catalog={catalog} />
+              <BundleSummary bundle={displayedBundle} catalog={catalog} onChangeCategory={setPickerCategory} />
             </>
           )}
         </div>
@@ -78,6 +94,19 @@ function App() {
           <ChatPanel messages={chat.messages} onSend={chat.sendMessage} />
         </div>
       </div>
+
+      {pickerCategory && pickerEligible && displayedBundle && (
+        <ProductPicker
+          category={pickerCategory}
+          products={pickerEligible}
+          selectedProductId={displayedBundle.items[pickerCategory]?.productId ?? ''}
+          onSelect={(productId) => {
+            void chat.selectProduct(pickerCategory, productId)
+            setPickerCategory(null)
+          }}
+          onClose={() => setPickerCategory(null)}
+        />
+      )}
     </div>
   )
 }

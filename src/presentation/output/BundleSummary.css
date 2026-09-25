@@ -54,9 +54,26 @@
   color: #181f1d;
 }
 
+.bundle-summary-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .bundle-summary-item-price {
   font-size: 14px;
   color: #181f1d;
+  white-space: nowrap;
+}
+
+.bundle-summary-item-change {
+  font-size: 12px;
+  border: 1px solid #0f5c66;
+  color: #0f5c66;
+  background: none;
+  border-radius: 5px;
+  padding: 4px 9px;
+  cursor: pointer;
   white-space: nowrap;
 }
 

@@ -1,5 +1,6 @@
-import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { BundleSummary } from "./BundleSummary";
 import type { Bundle, BundleLineItem } from "../../domain/types/bundle";
 import type { Product, ProductCategory } from "../../domain/types/product";
@@ -104,6 +105,44 @@ describe("BundleSummary", () => {
     const bundle = makeBundle({}, { toilet: makeItem("missing-id", "toilet", "Some rationale.") });
     render(<BundleSummary bundle={bundle} catalog={CATALOG} />);
     expect(screen.getByText("missing-id")).toBeInTheDocument();
+  });
+
+  describe("Change button", () => {
+    it("does not render at all when onChangeCategory isn't provided (e.g. the print view)", () => {
+      render(<BundleSummary bundle={makeBundle()} catalog={CATALOG} />);
+      expect(screen.queryByRole("button", { name: "Change" })).toBeNull();
+    });
+
+    it("renders one Change button per present category when onChangeCategory is provided", () => {
+      render(<BundleSummary bundle={makeBundle()} catalog={CATALOG} onChangeCategory={() => {}} />);
+      expect(screen.getAllByRole("button", { name: "Change" })).toHaveLength(5);
+    });
+
+    it("calls onChangeCategory with the clicked row's own category", async () => {
+      const onChangeCategory = vi.fn();
+      const user = userEvent.setup();
+      render(<BundleSummary bundle={makeBundle()} catalog={CATALOG} onChangeCategory={onChangeCategory} />);
+      const vanityRow = screen.getByText(/Poplin/).closest("li")!;
+      await user.click(within(vanityRow).getByRole("button", { name: "Change" }));
+      expect(onChangeCategory).toHaveBeenCalledWith("vanity");
+    });
+
+    it("never shows a Change button on an omitted category's row, even when onChangeCategory is provided", () => {
+      const bundle: Bundle = {
+        id: "bundle-1",
+        tier: "balanced",
+        items: {
+          toilet: makeItem("toilet-1", "toilet"),
+          shower: makeItem("shower-1", "shower"),
+        },
+        totalPriceCents: 150000,
+        budgetCents: 300000,
+        warnings: [],
+      };
+      render(<BundleSummary bundle={bundle} catalog={CATALOG} onChangeCategory={() => {}} />);
+      // Only toilet and shower are present -> exactly 2 Change buttons, none on the omitted rows.
+      expect(screen.getAllByRole("button", { name: "Change" })).toHaveLength(2);
+    });
   });
 
   describe("omitted categories", () => {

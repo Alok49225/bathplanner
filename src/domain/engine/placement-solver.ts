@@ -8,7 +8,7 @@
 
 import type { Product, Dimensions } from "../types/product";
 import type { FloorFixtureCategory, Rect } from "./fit-validator";
-import { footprintRect, clearanceRect, resolveClearance, intersects, withinRoom } from "./fit-validator";
+import { footprintRect, clearanceRect, resolveClearance, intersects, withinRoom, doorSwingRect } from "./fit-validator";
 import type { Room, Wall, Point } from "../types/room";
 
 const WALLS: Wall[] = ["north", "south", "east", "west"];
@@ -158,9 +158,16 @@ function centerBias(along: number, span: number, width: number): number {
 
 /**
  * Scores one candidate against the fixtures already placed earlier in the
- * search. Returns null for a hard geometric conflict (never placeable, no
- * matter how good the rest of the score would be) rather than a low number
- * — keeps "invalid" and "valid but not ideal" clearly distinct.
+ * search, and against the room's own fixed obstructions (a door's swing
+ * path — see fit-validator.ts's doorSwingRect). Returns null for a hard
+ * geometric conflict (never placeable, no matter how good the rest of the
+ * score would be) rather than a low number — keeps "invalid" and "valid but
+ * not ideal" clearly distinct. A door's swing zone is checked unconditionally
+ * (not just among `alreadyPlaced`) since it's part of the room itself, not
+ * something the search chose to put there — this makes rankCandidates's
+ * independent pass (which always calls this with alreadyPlaced=[]) exclude
+ * it too, instead of wasting a topK slot on a candidate backtracking would
+ * always reject anyway.
  */
 export function scoreCandidate(
   room: Room,
@@ -173,6 +180,9 @@ export function scoreCandidate(
   const rect = footprintRect(product, candidate.position, candidate.wall);
 
   if (alreadyPlaced.some((placed) => intersects(rect, placed.footprint))) {
+    return null;
+  }
+  if (room.doors.some((door) => intersects(rect, doorSwingRect(door, room)))) {
     return null;
   }
 

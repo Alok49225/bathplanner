@@ -6,6 +6,8 @@ import "./BundleSummary.css";
 export interface BundleSummaryProps {
   bundle: Bundle;
   catalog: Product[];
+  /** Omitted entirely by ShareableExport.tsx's print view, which has nothing to click — the Change button only renders when this is actually provided. */
+  onChangeCategory?: (category: ProductCategory) => void;
 }
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
@@ -49,7 +51,7 @@ function omissionReason(category: ProductCategory): string {
   }
 }
 
-export function BundleSummary({ bundle, catalog }: BundleSummaryProps) {
+export function BundleSummary({ bundle, catalog, onChangeCategory }: BundleSummaryProps) {
   const remainingCents = bundle.budgetCents - bundle.totalPriceCents;
 
   return (
@@ -76,8 +78,19 @@ export function BundleSummary({ bundle, catalog }: BundleSummaryProps) {
                     {product ? `${product.name} · ${product.brand}, ${product.finish}` : item.productId}
                   </span>
                 </span>
-                <span className="bundle-summary-item-price">
-                  {product ? currencyFormatter.format(product.priceCents / 100) : "—"}
+                <span className="bundle-summary-item-actions">
+                  <span className="bundle-summary-item-price">
+                    {product ? currencyFormatter.format(product.priceCents / 100) : "—"}
+                  </span>
+                  {onChangeCategory && (
+                    <button
+                      type="button"
+                      className="bundle-summary-item-change"
+                      onClick={() => onChangeCategory(category)}
+                    >
+                      Change
+                    </button>
+                  )}
                 </span>
               </div>
               <p className="bundle-summary-item-rationale">{item.rationale ?? "—"}</p>

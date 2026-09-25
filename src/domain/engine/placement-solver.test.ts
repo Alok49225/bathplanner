@@ -201,6 +201,30 @@ describe("scoreCandidate", () => {
     expect(scoreCandidate(room, candidate, footprint, "toilet", alreadyPlaced)).toBeNull();
   });
 
+  it("hard-rejects (null) a candidate whose footprint overlaps a door's swing zone, even with nothing else placed yet", () => {
+    const room = makeRoom({
+      widthIn: 60,
+      lengthIn: 96,
+      doors: [{ id: "d1", wall: "south", offset: 0, widthIn: 28, swing: "right" }],
+    });
+    // Flush against the door's own edge on the same wall — openSegments
+    // alone would allow this (it's past the door's own [0,28) span), but
+    // the door swings a quarter-circle of radius 28 into the room from
+    // there, which this candidate's footprint sits squarely inside.
+    const candidate = { position: { x: 28, y: 96 }, wall: "south" as const };
+    expect(scoreCandidate(room, candidate, footprint, "toilet", [])).toBeNull();
+  });
+
+  it("doesn't penalize a candidate nowhere near any door's swing zone", () => {
+    const room = makeRoom({
+      widthIn: 60,
+      lengthIn: 96,
+      doors: [{ id: "d1", wall: "south", offset: 0, widthIn: 28, swing: "right" }],
+    });
+    const candidate = { position: { x: 0, y: 0 }, wall: "north" as const }; // far side of the room
+    expect(scoreCandidate(room, candidate, footprint, "toilet", [])).not.toBeNull();
+  });
+
   it("scores a fully-clear, dead-center, first-placed candidate at exactly 1.0", () => {
     const room = makeRoom({ widthIn: 60, lengthIn: 96 });
     // along = (span - width) / 2 = (60 - 10) / 2 = 25 -> true dead-center
@@ -270,14 +294,19 @@ describe("solvePlacement", () => {
   });
 
   it("finds a valid joint combination even when both categories' independently-best spot would collide", () => {
-    // Only the north wall is usable: south is fully blocked by a door, and
-    // east/west are too short (span = lengthIn = 30) for either footprint's
-    // width. Both fixtures' independently-best (dead-center) spot on north
-    // land in heavily overlapping ranges, forcing the search to shift one.
+    // Only the north wall is usable: south is fully blocked, and east/west
+    // are too short (span = lengthIn = 30) for either footprint's width.
+    // Both fixtures' independently-best (dead-center) spot on north land in
+    // heavily overlapping ranges, forcing the search to shift one. A window
+    // (not a door) blocks south here deliberately — a door this wide would
+    // also carry a same-width swing zone (doorSwingRect) reaching clear
+    // across this shallow a room and swallowing north too, which isn't what
+    // this test is about; a window blocks the wall segment the identical
+    // way without a swing path to model.
     const room = makeRoom({
       widthIn: 60,
       lengthIn: 30,
-      doors: [{ id: "d1", wall: "south", offset: 0, widthIn: 60, swing: "left" }],
+      windows: [{ id: "w1", wall: "south", offset: 0, widthIn: 60, sillHeightIn: 48 }],
     });
     const footprints: Record<FloorFixtureCategory, Dimensions> = {
       toilet: { width: 16, depth: 28, height: 30 },
@@ -358,14 +387,17 @@ describe("placeFixturesWithFallback", () => {
     expect(result.feasible).toBe(false);
   });
 
-  it("escalates topK to find a real joint layout that the fast default misses on its own", () => {
+  it("resolves the real reported door+window room with all three fixtures, no omissions", () => {
     // Real catalog footprints (toilet 16.5x30, vanity 48x22, shower 60x32) in
     // a real 60x90 room with a door not flush against its wall's start
-    // corner — a genuine reported case where solvePlacement at the module's
-    // own DEFAULT_TOP_K (40) misses a valid layout entirely (confirmed by
-    // hand before this test was written), even though one exists and a
-    // higher topK finds it. Proves placeFixturesWithFallback doesn't give up
-    // on the first, cheapest attempt.
+    // corner and a window on another wall — a genuine reported case. Used to
+    // require the topK escalation ladder to find a valid layout at all
+    // (solvePlacement missed one at the module's own DEFAULT_TOP_K); now
+    // resolves directly at the fast default too, since the door-swing fix
+    // (doorSwingRect) stops the search from wasting candidates flush against
+    // the door in the first place. The escalation ladder itself stays
+    // covered by the synthetic-footprint tests above and below — this one's
+    // job is just proving the real reported room actually works end to end.
     const escalationRoom = makeRoom({
       widthIn: 60,
       lengthIn: 90,
@@ -378,8 +410,7 @@ describe("placeFixturesWithFallback", () => {
       shower: { width: 60, depth: 32, height: 48 },
     };
 
-    // The fast default alone genuinely misses it — this is the bug being fixed.
-    expect(solvePlacement(escalationRoom, ["toilet", "vanity", "shower"], footprints, 40)).toBeNull();
+    expect(solvePlacement(escalationRoom, ["toilet", "vanity", "shower"], footprints, 40)).not.toBeNull();
 
     const result = placeFixturesWithFallback(escalationRoom, footprints);
     expect(result.feasible).toBe(true);

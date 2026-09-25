@@ -173,6 +173,30 @@ describe("validateFit", () => {
     expect(issues.some((i) => i.code === "overlaps-window")).toBe(false);
   });
 
+  it("warns when a fixture's footprint blocks a door's swing zone", () => {
+    const room = makeRoom({
+      doors: [{ id: "d1", wall: "north", offset: 10, widthIn: 20, swing: "right" }], // hinge on the far jamb, swings inward
+      plumbing: [{ id: "toilet-rough-in", category: "toilet", position: { x: 15, y: 0 }, wall: "north" }],
+    });
+    const placements: FloorFixturePlacement[] = [
+      { category: "toilet", product: makeProduct(), plumbingPointId: "toilet-rough-in" },
+    ];
+    const issues = validateFit(placements, room);
+    expect(issues).toContainEqual(expect.objectContaining({ severity: "warning", code: "overlaps-door" }));
+  });
+
+  it("doesn't warn about a door nowhere near the fixture", () => {
+    const room = makeRoom({
+      doors: [{ id: "d1", wall: "north", offset: 40, widthIn: 10, swing: "right" }],
+      plumbing: [{ id: "toilet-rough-in", category: "toilet", position: { x: 5, y: 0 }, wall: "north" }],
+    });
+    const placements: FloorFixturePlacement[] = [
+      { category: "toilet", product: makeProduct(), plumbingPointId: "toilet-rough-in" },
+    ];
+    const issues = validateFit(placements, room);
+    expect(issues.some((i) => i.code === "overlaps-door")).toBe(false);
+  });
+
   it("only ever reports the three floor-fixture categories", () => {
     const room = makeRoom();
     const placements: FloorFixturePlacement[] = [

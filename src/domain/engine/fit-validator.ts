@@ -9,13 +9,13 @@
  * so "position" is treated as the fixture's back-corner nearest its wall,
  * "width" runs along the wall, "depth" runs away from it, and clearance
  * only extends away from the wall (never through it) plus symmetrically
- * to both sides. It catches the two failure modes that matter for the
- * demo — too close to a wall, too close to another fixture — without
- * modeling door swings or exact code geometry.
+ * to both sides. It catches the failure modes that matter for the demo —
+ * too close to a wall, too close to another fixture, blocking a door's
+ * swing — without modeling exact code geometry.
  */
 
 import type { Product } from "../types/product";
-import type { Room, Wall, Window } from "../types/room";
+import type { Door, Point, Room, Wall, Window } from "../types/room";
 
 export type FloorFixtureCategory = "toilet" | "vanity" | "shower";
 
@@ -27,7 +27,13 @@ export interface FloorFixturePlacement {
 
 export interface FitIssue {
   severity: "error" | "warning";
-  code: "no-plumbing-point" | "out-of-bounds" | "overlaps-fixture" | "insufficient-clearance" | "overlaps-window";
+  code:
+    | "no-plumbing-point"
+    | "out-of-bounds"
+    | "overlaps-fixture"
+    | "insufficient-clearance"
+    | "overlaps-window"
+    | "overlaps-door";
   message: string;
   category: FloorFixtureCategory;
 }
@@ -74,6 +80,47 @@ export function footprintRect(product: Product, position: { x: number; y: number
   }
 }
 
+const DOOR_SWING_MARGIN_IN = 2;
+
+/** The door's own point on its wall — same corner convention footprintRect already uses for a fixture's position. */
+function doorWallPosition(door: Door, room: Pick<Room, "widthIn" | "lengthIn">): Point {
+  switch (door.wall) {
+    case "north":
+      return { x: door.offset, y: 0 };
+    case "south":
+      return { x: door.offset, y: room.lengthIn };
+    case "west":
+      return { x: 0, y: door.offset };
+    case "east":
+      return { x: room.widthIn, y: door.offset };
+  }
+}
+
+/**
+ * The floor area a door sweeps through when opening, as its bounding
+ * square — the true swing is a quarter-circle of radius `widthIn` pivoting
+ * at whichever jamb the hinge is on (FloorPlan.tsx draws the exact arc),
+ * but its bounding square is geometrically identical to a fixture's own
+ * footprintRect() for a virtual product sized width=depth=door.widthIn at
+ * the door's own wall position — cheaper to test than the arc, and a safe
+ * superset (never lets a fixture into space the arc doesn't actually
+ * reach). Inflated by a small margin so a fixture placed exactly flush
+ * against the boundary (zero gap, not genuine overlap) still counts as
+ * blocking it — a swinging door needs real clearance, not just "technically
+ * not overlapping."
+ */
+export function doorSwingRect(door: Door, room: Pick<Room, "widthIn" | "lengthIn">): Rect {
+  const position = doorWallPosition(door, room);
+  const virtualDoorProduct = { dimensions: { width: door.widthIn, depth: door.widthIn, height: 0 } } as Product;
+  const rect = footprintRect(virtualDoorProduct, position, door.wall);
+  return {
+    x1: rect.x1 - DOOR_SWING_MARGIN_IN,
+    y1: rect.y1 - DOOR_SWING_MARGIN_IN,
+    x2: rect.x2 + DOOR_SWING_MARGIN_IN,
+    y2: rect.y2 + DOOR_SWING_MARGIN_IN,
+  };
+}
+
 /** Exported for t24's clearance overlay — reused directly, same reasoning as footprintRect. */
 export function clearanceRect(footprint: Rect, wall: Wall, clearance: Clearance): Rect {
   const { front, side } = clearance;
@@ -100,8 +147,8 @@ export function clearanceRect(footprint: Rect, wall: Wall, clearance: Clearance)
  * own along-the-wall span overlap the window's, on that same wall — a plain
  * 1D interval check, not a 2D one. Doesn't model sill height (a window
  * mounted high enough above a low fixture might be perfectly fine) — same
- * coarse simplification this file's own doc comment already applies to
- * clearance and door swings.
+ * coarse simplification this file's own doc comment already applies
+ * elsewhere.
  */
 function alongWallSpan(footprint: Rect, wall: Wall): [number, number] {
   return wall === "north" || wall === "south" ? [footprint.x1, footprint.x2] : [footprint.y1, footprint.y2];
@@ -215,6 +262,19 @@ export function validateFit(placements: FloorFixturePlacement[], room: Room): Fi
         severity: "warning",
         code: "overlaps-window",
         message: `${placement.category} is placed right at a window.`,
+        category: placement.category,
+      });
+    }
+
+    // Same safety net as the window check above — auto-placement now avoids
+    // a door's swing zone too (see placement-solver.ts's scoreCandidate),
+    // but manual placement can still put a fixture right where the door
+    // would swing open.
+    if (room.doors.some((door) => intersects(footprint, doorSwingRect(door, room)))) {
+      issues.push({
+        severity: "warning",
+        code: "overlaps-door",
+        message: `${placement.category} blocks the door from swinging open.`,
         category: placement.category,
       });
     }
