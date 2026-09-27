@@ -4,7 +4,7 @@ An AI-assisted bathroom designer & planner, built as a case-study prototype. Giv
 
 **Live demo:** https://kohlerbathplanner.vercel.app
 
-**Submission materials:** [Prompts & Workflow Documentation](./docs/prompts-documentation.pdf) · [Presentation Deck](./docs/presentation-deck.pdf) · [Video Demonstration](./docs/bath-planner-demo.mp4)
+**Submission materials:** [Prompts & Workflow Documentation](./docs/prompts-documentation.pdf) · [Presentation Deck](./docs/presentation-deck.pdf) · [Video Demonstration](./docs/bath-planner-demo.mp4) · [New Features Demo (silent, 21s)](./docs/new-features-demo.mp4)
 
 ## What it does
 
