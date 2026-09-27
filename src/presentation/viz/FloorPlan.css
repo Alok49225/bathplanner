@@ -49,6 +49,10 @@
   vector-effect: non-scaling-stroke;
 }
 
+.floor-plan-floor {
+  transition: fill 0.3s ease;
+}
+
 .floor-plan-plumbing {
   fill: var(--plumbing-fallback); /* only used if a category ever falls outside the three below */
   stroke: #ffffff;
@@ -78,6 +82,22 @@
   font-family: system-ui, sans-serif;
   font-size: 3.5px;
   fill: #9fada6;
+}
+
+.floor-plan-tooltip {
+  position: fixed;
+  transform: translate(-50%, calc(-100% - 8px));
+  background: #ffffff;
+  color: #181f1d;
+  border: 1px solid #d3dbd6;
+  border-radius: 6px;
+  padding: 5px 9px;
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(24, 31, 29, 0.15);
+  pointer-events: none;
+  z-index: 10;
 }
 
 .floor-plan-legend {

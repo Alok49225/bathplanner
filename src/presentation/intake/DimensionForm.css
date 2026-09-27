@@ -5,6 +5,21 @@
   font-family: system-ui, sans-serif;
 }
 
+.dimension-form-header {
+  display: flex;
+}
+
+.dimension-example-button {
+  font-size: 12px;
+  border: 1px solid #0f5c66;
+  color: #0f5c66;
+  background: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
 .dimension-fields {
   display: flex;
   gap: 16px;

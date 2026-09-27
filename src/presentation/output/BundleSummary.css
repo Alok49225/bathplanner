@@ -120,6 +120,15 @@
   color: #181f1d;
 }
 
+.bundle-summary-floor {
+  font-size: 13px;
+  color: #526059;
+}
+
+.bundle-summary-floor strong {
+  color: #181f1d;
+}
+
 .bundle-summary-warnings {
   margin: 0;
   padding: 10px 14px;

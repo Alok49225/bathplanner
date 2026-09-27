@@ -274,4 +274,90 @@ describe("FloorPlan", () => {
       expect(onPlace).not.toHaveBeenCalled();
     });
   });
+
+  describe("floor color", () => {
+    function floorFill(): string | null {
+      return screen.getByTestId("floor-plan-floor").getAttribute("fill");
+    }
+
+    it("colors the floor for each preset theme distinctly", () => {
+      const { rerender } = render(<FloorPlan room={emptyRoom()} theme={{ kind: "preset", theme: "minimalist-modern" }} />);
+      const modern = floorFill();
+
+      rerender(<FloorPlan room={emptyRoom()} theme={{ kind: "preset", theme: "classic-luxury" }} />);
+      const luxury = floorFill();
+
+      rerender(<FloorPlan room={emptyRoom()} theme={{ kind: "preset", theme: "japanese-zen" }} />);
+      const zen = floorFill();
+
+      expect(new Set([modern, luxury, zen]).size).toBe(3); // all three distinct
+    });
+
+    it("falls back to plain white for a custom theme", () => {
+      render(<FloorPlan room={emptyRoom()} theme={{ kind: "custom", text: "coastal" }} />);
+      expect(screen.getByTestId("floor-plan-floor").getAttribute("fill")).toBe("#ffffff");
+    });
+
+    it("falls back to plain white when no theme is passed at all", () => {
+      render(<FloorPlan room={emptyRoom()} />);
+      expect(screen.getByTestId("floor-plan-floor").getAttribute("fill")).toBe("#ffffff");
+    });
+
+    it("sizes the floor rect exactly to the room, matching the viewBox", () => {
+      const room = emptyRoom({ widthIn: 80, lengthIn: 120 });
+      render(<FloorPlan room={room} theme={{ kind: "preset", theme: "japanese-zen" }} />);
+      const rect = screen.getByTestId("floor-plan-floor");
+      expect(rect.getAttribute("x")).toBe("0");
+      expect(rect.getAttribute("y")).toBe("0");
+      expect(rect.getAttribute("width")).toBe("80");
+      expect(rect.getAttribute("height")).toBe("120");
+    });
+
+    it("draws the floor behind every plumbing marker, never covering them", () => {
+      const room = emptyRoom({
+        plumbing: [{ id: "t1", category: "toilet", position: { x: 10, y: 10 }, wall: "north" }],
+      });
+      const { container } = render(<FloorPlan room={room} theme={{ kind: "preset", theme: "classic-luxury" }} />);
+      const svg = container.querySelector("svg")!;
+      const children = Array.from(svg.children);
+      const floorIndex = children.indexOf(screen.getByTestId("floor-plan-floor"));
+      const markerIndex = children.findIndex((el) => el.contains(screen.getByTestId("plumbing-t1")));
+      expect(floorIndex).toBeGreaterThanOrEqual(0);
+      expect(markerIndex).toBeGreaterThan(floorIndex);
+    });
+
+    it("labels the floor with its actual material, not just the bare theme name", () => {
+      render(<FloorPlan room={emptyRoom()} theme={{ kind: "preset", theme: "japanese-zen" }} />);
+      expect(screen.getByTestId("floor-plan-floor").querySelector("title")?.textContent).toBe("Light Wood Tile");
+    });
+
+    it("labels the floor generically when there's no preset theme to name", () => {
+      render(<FloorPlan room={emptyRoom()} theme={{ kind: "custom", text: "coastal" }} />);
+      expect(screen.getByTestId("floor-plan-floor").querySelector("title")?.textContent).toBe("Floor");
+    });
+
+    it("includes the floor's material in the whole SVG's own aria-label too", () => {
+      const { container } = render(
+        <FloorPlan room={emptyRoom()} theme={{ kind: "preset", theme: "classic-luxury" }} />
+      );
+      const label = container.querySelector("svg")!.getAttribute("aria-label");
+      expect(label).toContain("warm marble tile");
+    });
+
+    // Native SVG <title> tooltips turned out unreliable in real browser
+    // testing (confirmed by hand — present in the DOM and correctly
+    // hit-tested, but never actually shown), so the floor gets the same
+    // custom hover tooltip FixtureLayer.tsx already uses instead of trusting
+    // the browser to render <title> on hover.
+    it("shows a custom hover tooltip naming the floor's material, not just the native (unreliable) title", () => {
+      const { container } = render(
+        <FloorPlan room={emptyRoom()} theme={{ kind: "preset", theme: "japanese-zen" }} />
+      );
+      expect(container.querySelector(".floor-plan-tooltip")).not.toBeInTheDocument();
+      fireEvent.mouseEnter(screen.getByTestId("floor-plan-floor"));
+      expect(container.querySelector(".floor-plan-tooltip")?.textContent).toBe("Light Wood Tile");
+      fireEvent.mouseLeave(screen.getByTestId("floor-plan-floor"));
+      expect(container.querySelector(".floor-plan-tooltip")).not.toBeInTheDocument();
+    });
+  });
 });

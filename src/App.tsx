@@ -72,7 +72,12 @@ function App() {
       <h1 className="app-title">Bath Planner</h1>
       <div className="app-columns">
         <div className="app-main">
-          <DimensionForm value={session.room} onChange={(room) => patchSession({ room })} catalog={catalog} />
+          <DimensionForm
+            value={session.room}
+            onChange={(room) => patchSession({ room })}
+            catalog={catalog}
+            theme={session.theme}
+          />
           <BudgetSlider valueCents={session.budgetCents} onChange={(budgetCents) => patchSession({ budgetCents })} />
           <ThemeSelector value={session.theme} onChange={(theme) => patchSession({ theme })} />
 
@@ -82,10 +87,15 @@ function App() {
             <>
               <TierSwitcher tiers={solvedTiers} selectedTier={selectedTier} onChange={setSelectedTier} />
               <div className="app-plan-stack">
-                <FloorPlan room={session.room} showLegend={false} />
+                <FloorPlan room={session.room} showLegend={false} theme={session.theme} />
                 <FixtureLayer bundle={displayedBundle} catalog={catalog} room={session.room} />
               </div>
-              <BundleSummary bundle={displayedBundle} catalog={catalog} onChangeCategory={setPickerCategory} />
+              <BundleSummary
+                bundle={displayedBundle}
+                catalog={catalog}
+                onChangeCategory={setPickerCategory}
+                theme={session.theme}
+              />
             </>
           )}
         </div>

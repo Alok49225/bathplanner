@@ -1,5 +1,5 @@
 import type { RoomDimensions } from "../../domain/types/room";
-import type { Product } from "../../domain/types/product";
+import type { Product, ThemeSelection } from "../../domain/types/product";
 import { DoorList } from "./DoorList";
 import { WindowList } from "./WindowList";
 import { PlumbingPointList } from "./PlumbingPointList";
@@ -16,6 +16,8 @@ export interface DimensionFormProps {
   onChange: (value: RoomDimensions) => void;
   /** Null while the catalog is still loading — threaded straight through to PlumbingPointList's auto-place button. */
   catalog: Product[] | null;
+  /** Threaded straight through to the click-to-place floor plan, so its floor color matches the one shown after solving. */
+  theme?: ThemeSelection;
 }
 
 function feetAndInches(inches: number): string {
@@ -24,7 +26,24 @@ function feetAndInches(inches: number): string {
   return `${inches} in ≈ ${feet}'${remainder}"`;
 }
 
-export function DimensionForm({ value, onChange, catalog }: DimensionFormProps) {
+/**
+ * The blueprint's own worked example (Vision section: "her exact 5'x8' room")
+ * — the same 60x96 size solver-invariants.test.ts sweeps for real-catalog
+ * coverage. Loading it replaces the room wholesale (a fresh start, not a
+ * merge) so a demo never has to hand-type dimensions or untangle stale
+ * doors/windows/plumbing left over from a previous room.
+ */
+const EXAMPLE_ROOM: RoomDimensions = {
+  widthIn: 60,
+  lengthIn: 96,
+  ceilingHeightIn: 96,
+  doors: [],
+  windows: [],
+  plumbing: [],
+  omittedFixtures: [],
+};
+
+export function DimensionForm({ value, onChange, catalog, theme }: DimensionFormProps) {
   function updateField<K extends keyof RoomDimensions>(key: K, fieldValue: RoomDimensions[K]) {
     onChange({ ...value, [key]: fieldValue });
   }
@@ -43,6 +62,11 @@ export function DimensionForm({ value, onChange, catalog }: DimensionFormProps) 
 
   return (
     <div className="dimension-form">
+      <div className="dimension-form-header">
+        <button type="button" className="dimension-example-button" onClick={() => onChange(EXAMPLE_ROOM)}>
+          Load example room (5'&times;8' hall bath)
+        </button>
+      </div>
       <div className="dimension-fields">
         <div className="dimension-field">
           <label htmlFor="dim-width">Width (in)</label>
@@ -84,6 +108,7 @@ export function DimensionForm({ value, onChange, catalog }: DimensionFormProps) 
         room={value}
         catalog={catalog}
         onAutoPlace={handleAutoPlace}
+        theme={theme}
       />
     </div>
   );

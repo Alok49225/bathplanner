@@ -1,6 +1,8 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import type { Product, ProductCategory } from "../../domain/types/product";
 import "./ProductPicker.css";
+
+const FOCUSABLE_SELECTOR = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
 export interface ProductPickerProps {
   category: ProductCategory;
@@ -38,13 +40,60 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
  */
 export function ProductPicker({ category, products, selectedProductId, onSelect, onClose }: ProductPickerProps) {
   const sorted = useMemo(() => [...products].sort((a, b) => a.priceCents - b.priceCents), [products]);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  // App.tsx passes a fresh inline onClose every render — kept in a ref so
+  // the mount-effect below can always call the latest one without needing
+  // to re-run its setup (and re-capture "what was focused before") on
+  // every re-render, only on genuine mount/unmount.
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
+  // Runs exactly once per open/close cycle — this component only ever
+  // exists while a category's picker is actually open (App.tsx renders it
+  // conditionally), so mount == open and unmount == close. Moves focus into
+  // the dialog immediately, restores it to whatever triggered the open
+  // (the "Change" button) once closed, and traps Tab/Shift+Tab inside the
+  // dialog so keyboard focus can't silently escape to the page underneath
+  // while a modal is up.
+  useEffect(() => {
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    dialogRef.current?.focus();
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        onCloseRef.current();
+        return;
+      }
+      if (e.key !== "Tab" || !dialogRef.current) return;
+      const focusable = dialogRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      previouslyFocused?.focus();
+    };
+  }, []);
 
   return (
     <div className="product-picker-backdrop" onClick={onClose}>
       <div
+        ref={dialogRef}
         className="product-picker"
         role="dialog"
+        aria-modal="true"
         aria-label={`Choose a ${CATEGORY_LABELS[category]}`}
+        tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="product-picker-header">

@@ -98,4 +98,43 @@ describe("DimensionForm", () => {
     expect(lastCall.plumbing.map((p) => p.category).sort()).toEqual(["shower", "toilet", "vanity"]);
     expect(lastCall.widthIn).toBe(96); // untouched sibling fields preserved
   });
+
+  describe("Load example room", () => {
+    it("replaces the room wholesale with the 5'x8' hall bath", async () => {
+      const onChange = vi.fn();
+      const user = userEvent.setup();
+      render(<DimensionForm value={{ ...baseValue(), widthIn: 40, lengthIn: 40 }} onChange={onChange} catalog={null} />);
+      await user.click(screen.getByRole("button", { name: /Load example room/ }));
+      expect(onChange).toHaveBeenCalledWith({
+        widthIn: 60,
+        lengthIn: 96,
+        ceilingHeightIn: 96,
+        doors: [],
+        windows: [],
+        plumbing: [],
+        omittedFixtures: [],
+      });
+    });
+
+    it("clears stale doors, windows, and plumbing from whatever room was there before, not just resizing it", async () => {
+      const onChange = vi.fn();
+      const user = userEvent.setup();
+      const clutteredValue: RoomDimensions = {
+        widthIn: 40,
+        lengthIn: 40,
+        ceilingHeightIn: 96,
+        doors: [{ id: "d1", wall: "south", offset: 0, widthIn: 28, swing: "right" }],
+        windows: [{ id: "w1", wall: "north", offset: 0, widthIn: 20, sillHeightIn: 48 }],
+        plumbing: [{ id: "p1", category: "toilet", position: { x: 0, y: 0 }, wall: "north" }],
+        omittedFixtures: ["vanity"],
+      };
+      render(<DimensionForm value={clutteredValue} onChange={onChange} catalog={null} />);
+      await user.click(screen.getByRole("button", { name: /Load example room/ }));
+      const lastCall = onChange.mock.calls.at(-1)?.[0] as RoomDimensions;
+      expect(lastCall.doors).toEqual([]);
+      expect(lastCall.windows).toEqual([]);
+      expect(lastCall.plumbing).toEqual([]);
+      expect(lastCall.omittedFixtures).toEqual([]);
+    });
+  });
 });

@@ -1,6 +1,14 @@
+import { useState } from "react";
 import type { MouseEvent as ReactMouseEvent } from "react";
 import type { RoomDimensions, Wall, PlumbingPoint, Point } from "../../domain/types/room";
+import type { Theme, ThemeSelection } from "../../domain/types/product";
 import "./FloorPlan.css";
+
+interface HoverState {
+  text: string;
+  x: number;
+  y: number;
+}
 
 export interface FloorPlanProps {
   room: RoomDimensions;
@@ -20,6 +28,39 @@ export interface FloorPlanProps {
    */
   selectedCategory?: PlumbingPoint["category"] | null;
   onPlumbingPointPlace?: (category: PlumbingPoint["category"], position: Point) => void;
+  /** Drives the floor's color — a custom theme or no theme at all just keeps today's plain white, same as a preset's engine scoring not applying to it either. */
+  theme?: ThemeSelection;
+}
+
+const FLOOR_COLORS: Record<Theme, string> = {
+  "minimalist-modern": "#f7f8f7",
+  "classic-luxury": "#ede1c8",
+  "japanese-zen": "#d9c7a1",
+};
+const DEFAULT_FLOOR_COLOR = "#ffffff";
+
+/**
+ * Names the actual material each color evokes, not the bare theme name —
+ * "Japanese Zen floor" doesn't tell a viewer anything the color itself
+ * didn't already convey, but a material name explains *why* a theme
+ * produces that particular color. Kept as its own local copy in
+ * BundleSummary.tsx too, same "small deliberate duplication" precedent as
+ * every other per-file label map in this codebase (CATEGORY_LABELS etc.) —
+ * but change a value here, change it there too, since the two are meant to
+ * describe the same floor.
+ */
+const FLOOR_MATERIAL_LABELS: Record<Theme, string> = {
+  "minimalist-modern": "Matte White Tile",
+  "classic-luxury": "Warm Marble Tile",
+  "japanese-zen": "Light Wood Tile",
+};
+
+function floorColor(theme: ThemeSelection | undefined): string {
+  return theme?.kind === "preset" ? FLOOR_COLORS[theme.theme] : DEFAULT_FLOOR_COLOR;
+}
+
+function floorLabel(theme: ThemeSelection | undefined): string {
+  return theme?.kind === "preset" ? FLOOR_MATERIAL_LABELS[theme.theme] : "Floor";
 }
 
 interface Vec {
@@ -95,12 +136,26 @@ const PLUMBING_CATEGORY_LABELS: Record<PlumbingPoint["category"], string> = {
   shower: "Shower",
 };
 
-export function FloorPlan({ room, showLegend = true, selectedCategory, onPlumbingPointPlace }: FloorPlanProps) {
+export function FloorPlan({ room, showLegend = true, selectedCategory, onPlumbingPointPlace, theme }: FloorPlanProps) {
   const openingsByWall: Record<Wall, Opening[]> = { north: [], south: [], east: [], west: [] };
   room.doors.forEach((d) => openingsByWall[d.wall].push({ start: d.offset, end: d.offset + d.widthIn }));
   room.windows.forEach((w) => openingsByWall[w.wall].push({ start: w.offset, end: w.offset + w.widthIn }));
 
   const plumbingCategoriesPresent = [...new Set(room.plumbing.map((p) => p.category))];
+
+  // Native SVG <title> tooltips are unreliable across browsers (confirmed by
+  // hand — the element and its title were both present and correctly
+  // hit-tested, but no tooltip ever appeared) — same reason FixtureLayer.tsx
+  // already renders its own hover tooltip instead of trusting <title> alone.
+  // Reusing that exact mechanism here rather than the browser's.
+  const [hover, setHover] = useState<HoverState | null>(null);
+  function showHover(e: ReactMouseEvent<SVGGraphicsElement>, text: string) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setHover({ text, x: rect.left + rect.width / 2, y: rect.top });
+  }
+  function hideHover() {
+    setHover(null);
+  }
 
   function handleClick(e: ReactMouseEvent<SVGSVGElement>) {
     if (!selectedCategory || !onPlumbingPointPlace) return;
@@ -129,9 +184,24 @@ export function FloorPlan({ room, showLegend = true, selectedCategory, onPlumbin
       className={`floor-plan${selectedCategory ? " floor-plan-placing" : ""}`}
       viewBox={`0 0 ${room.widthIn} ${room.lengthIn}`}
       role="img"
-      aria-label={`Floor plan, ${room.widthIn} by ${room.lengthIn} inches`}
+      aria-label={`Floor plan, ${room.widthIn} by ${room.lengthIn} inches, ${floorLabel(theme).toLowerCase()}`}
       onClick={handleClick}
     >
+      {/* First child — drawn behind every wall/door/window/fixture marker below, never covering them. */}
+      <rect
+        className="floor-plan-floor"
+        data-testid="floor-plan-floor"
+        x={0}
+        y={0}
+        width={room.widthIn}
+        height={room.lengthIn}
+        fill={floorColor(theme)}
+        onMouseEnter={(e) => showHover(e, floorLabel(theme))}
+        onMouseLeave={hideHover}
+      >
+        <title>{floorLabel(theme)}</title>
+      </rect>
+
       {WALLS.map((wall) => {
         const base = wallBase(wall, room);
         const along = ALONG[wall];
@@ -223,6 +293,11 @@ export function FloorPlan({ room, showLegend = true, selectedCategory, onPlumbin
         );
       })()}
     </svg>
+    {hover && (
+      <div className="floor-plan-tooltip" style={{ left: hover.x, top: hover.y }}>
+        {hover.text}
+      </div>
+    )}
     {showLegend && plumbingCategoriesPresent.length > 0 && (
       <div className="floor-plan-legend">
         {plumbingCategoriesPresent.map((category) => (

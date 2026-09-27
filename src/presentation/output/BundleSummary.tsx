@@ -1,5 +1,5 @@
 import { PRODUCT_CATEGORIES } from "../../domain/types/product";
-import type { Product, ProductCategory } from "../../domain/types/product";
+import type { Product, ProductCategory, Theme, ThemeSelection } from "../../domain/types/product";
 import type { Bundle } from "../../domain/types/bundle";
 import "./BundleSummary.css";
 
@@ -8,6 +8,8 @@ export interface BundleSummaryProps {
   catalog: Product[];
   /** Omitted entirely by ShareableExport.tsx's print view, which has nothing to click — the Change button only renders when this is actually provided. */
   onChangeCategory?: (category: ProductCategory) => void;
+  /** Drives the "Floor: ..." line below — a custom theme has no distinctive floor color to explain (same as FloorPlan.tsx's own fallback), so it's simply omitted then. */
+  theme?: ThemeSelection;
 }
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
@@ -25,6 +27,16 @@ const CATEGORY_LABELS: Record<ProductCategory, string> = {
   faucet: "Faucet",
   shower: "Shower",
   lighting: "Lighting",
+};
+
+// Same values FloorPlan.tsx's own FLOOR_MATERIAL_LABELS uses for its hover
+// tooltip/aria-label — kept as its own local copy per this file's established
+// per-file label precedent (see CATEGORY_LABELS above), but the two describe
+// the same floor, so a value changed here needs changing there too.
+const FLOOR_MATERIAL_LABELS: Record<Theme, string> = {
+  "minimalist-modern": "Matte White Tile",
+  "classic-luxury": "Warm Marble Tile",
+  "japanese-zen": "Light Wood Tile",
 };
 
 function resolveProduct(catalog: Product[], productId: string): Product | undefined {
@@ -51,7 +63,7 @@ function omissionReason(category: ProductCategory): string {
   }
 }
 
-export function BundleSummary({ bundle, catalog, onChangeCategory }: BundleSummaryProps) {
+export function BundleSummary({ bundle, catalog, onChangeCategory, theme }: BundleSummaryProps) {
   const remainingCents = bundle.budgetCents - bundle.totalPriceCents;
 
   return (
@@ -114,6 +126,12 @@ export function BundleSummary({ bundle, catalog, onChangeCategory }: BundleSumma
       {typeof bundle.sustainabilityScore === "number" && (
         <div className="bundle-summary-sustainability">
           Water efficiency: <strong>{Math.round(bundle.sustainabilityScore * 100)}%</strong>
+        </div>
+      )}
+
+      {theme?.kind === "preset" && (
+        <div className="bundle-summary-floor">
+          Floor: <strong>{FLOOR_MATERIAL_LABELS[theme.theme]}</strong> — chosen to match your selected style.
         </div>
       )}
 

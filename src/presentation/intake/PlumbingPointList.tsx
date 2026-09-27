@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { RoomDimensions, PlumbingPoint, Wall, Point } from "../../domain/types/room";
-import type { Product } from "../../domain/types/product";
+import type { Product, ThemeSelection } from "../../domain/types/product";
 import { getFootprintEnvelope, placeFixturesWithFallback } from "../../domain/engine/placement-solver";
 import { FloorPlan } from "../viz/FloorPlan";
 import "./ListEditor.css";
@@ -20,6 +20,8 @@ export interface PlumbingPointListProps {
   catalog: Product[] | null;
   /** Fires with a fresh proposal (replacing `value` entirely) when auto-placement succeeds — DimensionForm.tsx decides how that combines with `omittedFixtures`. */
   onAutoPlace: (result: AutoPlaceResult) => void;
+  /** Passed straight through to the embedded FloorPlan for its floor color — this component never reads it itself. */
+  theme?: ThemeSelection;
 }
 
 const FLOOR_CATEGORIES: PlumbingPoint["category"][] = ["toilet", "vanity", "shower"];
@@ -67,7 +69,7 @@ function nearestWall(position: Point, room: RoomDimensions): Wall {
   );
 }
 
-export function PlumbingPointList({ value, onChange, room, catalog, onAutoPlace }: PlumbingPointListProps) {
+export function PlumbingPointList({ value, onChange, room, catalog, onAutoPlace, theme }: PlumbingPointListProps) {
   const [selectedCategory, setSelectedCategory] = useState<PlumbingPoint["category"] | null>(null);
   const [isPlacing, setIsPlacing] = useState(false);
   const [placementError, setPlacementError] = useState<string | null>(null);
@@ -164,7 +166,12 @@ export function PlumbingPointList({ value, onChange, room, catalog, onAutoPlace 
             </button>
           ))}
         </div>
-        <FloorPlan room={{ ...room, plumbing: value }} selectedCategory={selectedCategory} onPlumbingPointPlace={handlePlace} />
+        <FloorPlan
+          room={{ ...room, plumbing: value }}
+          selectedCategory={selectedCategory}
+          onPlumbingPointPlace={handlePlace}
+          theme={theme}
+        />
         <p className="plumbing-placer-hint">
           {selectedCategory
             ? `Click on the floor plan to place the ${CATEGORY_LABELS[selectedCategory].toLowerCase()}.`

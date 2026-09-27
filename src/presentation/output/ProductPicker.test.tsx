@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ProductPicker } from "./ProductPicker";
 import type { Product } from "../../domain/types/product";
@@ -95,5 +95,66 @@ describe("ProductPicker", () => {
       <ProductPicker category="vanity" products={PRODUCTS} selectedProductId="mid" onSelect={() => {}} onClose={() => {}} />
     );
     expect(screen.getByRole("dialog", { name: "Choose a Vanity" })).toBeInTheDocument();
+  });
+
+  describe("keyboard accessibility", () => {
+    it("closes when Escape is pressed", () => {
+      const onClose = vi.fn();
+      render(
+        <ProductPicker category="toilet" products={PRODUCTS} selectedProductId="mid" onSelect={() => {}} onClose={onClose} />
+      );
+      fireEvent.keyDown(document, { key: "Escape" });
+      expect(onClose).toHaveBeenCalled();
+    });
+
+    it("moves focus into the dialog as soon as it opens", () => {
+      render(
+        <ProductPicker category="toilet" products={PRODUCTS} selectedProductId="mid" onSelect={() => {}} onClose={() => {}} />
+      );
+      expect(screen.getByRole("dialog")).toHaveFocus();
+    });
+
+    it("returns focus to whatever was focused before the picker opened, once it closes", () => {
+      const trigger = document.createElement("button");
+      trigger.textContent = "Change";
+      document.body.appendChild(trigger);
+      trigger.focus();
+      expect(trigger).toHaveFocus();
+
+      const { unmount } = render(
+        <ProductPicker category="toilet" products={PRODUCTS} selectedProductId="mid" onSelect={() => {}} onClose={() => {}} />
+      );
+      expect(screen.getByRole("dialog")).toHaveFocus();
+
+      unmount();
+      expect(trigger).toHaveFocus();
+      trigger.remove();
+    });
+
+    it("wraps Tab from the last focusable element back to the first, instead of escaping the dialog", () => {
+      render(
+        <ProductPicker category="toilet" products={PRODUCTS} selectedProductId="mid" onSelect={() => {}} onClose={() => {}} />
+      );
+      const closeButton = screen.getByRole("button", { name: "Close" });
+      const selectButtons = screen.getAllByRole("button", { name: "Select" });
+      const lastFocusable = selectButtons[selectButtons.length - 1];
+
+      lastFocusable.focus();
+      fireEvent.keyDown(document, { key: "Tab" });
+      expect(closeButton).toHaveFocus();
+    });
+
+    it("wraps Shift+Tab from the first focusable element back to the last, instead of escaping the dialog", () => {
+      render(
+        <ProductPicker category="toilet" products={PRODUCTS} selectedProductId="mid" onSelect={() => {}} onClose={() => {}} />
+      );
+      const closeButton = screen.getByRole("button", { name: "Close" });
+      const selectButtons = screen.getAllByRole("button", { name: "Select" });
+      const lastFocusable = selectButtons[selectButtons.length - 1];
+
+      closeButton.focus();
+      fireEvent.keyDown(document, { key: "Tab", shiftKey: true });
+      expect(lastFocusable).toHaveFocus();
+    });
   });
 });

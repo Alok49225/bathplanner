@@ -145,6 +145,36 @@ describe("BundleSummary", () => {
     });
   });
 
+  describe("floor line", () => {
+    it("names the floor's actual material for each preset theme, not just the bare theme name", () => {
+      const { rerender } = render(
+        <BundleSummary bundle={makeBundle()} catalog={CATALOG} theme={{ kind: "preset", theme: "minimalist-modern" }} />
+      );
+      expect(screen.getByText("Matte White Tile")).toBeInTheDocument();
+      expect(screen.getByText(/chosen to match your selected style/)).toBeInTheDocument();
+
+      rerender(
+        <BundleSummary bundle={makeBundle()} catalog={CATALOG} theme={{ kind: "preset", theme: "classic-luxury" }} />
+      );
+      expect(screen.getByText("Warm Marble Tile")).toBeInTheDocument();
+
+      rerender(
+        <BundleSummary bundle={makeBundle()} catalog={CATALOG} theme={{ kind: "preset", theme: "japanese-zen" }} />
+      );
+      expect(screen.getByText("Light Wood Tile")).toBeInTheDocument();
+    });
+
+    it("omits the floor line for a custom theme, which has no distinctive floor color to explain", () => {
+      render(<BundleSummary bundle={makeBundle()} catalog={CATALOG} theme={{ kind: "custom", text: "coastal" }} />);
+      expect(screen.queryByText(/Floor:/)).toBeNull();
+    });
+
+    it("omits the floor line when no theme is passed at all", () => {
+      render(<BundleSummary bundle={makeBundle()} catalog={CATALOG} />);
+      expect(screen.queryByText(/Floor:/)).toBeNull();
+    });
+  });
+
   describe("omitted categories", () => {
     function makeOmittingBundle(omitted: ProductCategory[]): Bundle {
       const items: Partial<Record<ProductCategory, BundleLineItem>> = {};
